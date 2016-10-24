@@ -3,7 +3,7 @@
 # Feeds that data to the reddit bot for posting
 ############################################################################################
 
-import requests, json
+import requests, json, copy
 from pprint import pprint
 
 
@@ -179,7 +179,11 @@ def getMostRecentGame(charID, memID):
            + str(charID) +"/?count=1&definitions=False&mode=32")
     
     request = makeRequest(url)
-    recentID = (request['Response']['data']['activities']['activityDetails']['instanceId'])
+
+    try:
+        recentID = (request['Response']['data']['activities']['activityDetails']['instanceId'])
+    except:
+        recentID = 0
 
     return recentID
 
@@ -189,21 +193,13 @@ def defineLastGamePlayed(clanList):
     ############################################################################################
     
     memberIDs = []
+    memberChars = []
     lastGameIds = {}
 
     # Extract the member IDs from the most current list
-    x = 0
-    
     for i in clanList:
-        memberIDs.append(i.memberID[x])
-        x += 1
-
-    # Get the most recent game played
-    # Build the dict
-    x = 0
-
-    for i in memberIDs:
-        lastGameIds.
-
-
+        memberIDs.append(i.memberID)
+        memberChars.append(i.memberChars)
+            
+                  
     return lastGameIds

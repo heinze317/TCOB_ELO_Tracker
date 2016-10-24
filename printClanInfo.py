@@ -3,8 +3,22 @@
 # Bungie API app
 ############################################################################################
 
-from destinyInfo import getClanData, getCharacterNumber, buildClan, getMatchDetails
+from destinyInfo import getClanData, getCharacterNumber, buildClan, getMatchDetails, defineLastGamePlayed
 from pprint import pprint
+
+def printLastGame():
+    
+    clanList = []
+    lastGame = {}
+
+    # Build the clan list
+    clanList = buildClan()
+
+    # Build the dict containing each member and their chars' last game
+    lastGame.update(defineLastGamePlayed(clanList))
+
+    # Print the dict
+    pprint(lastGame)
 
 def printAllData():
     
@@ -62,7 +76,10 @@ def main():
     #printClanArray()
 
     # Print players in a specific match
-    printMatchPlayers()
+    #printMatchPlayers()
+
+    # Print the members' last game
+    printLastGame()
 
     return
 
