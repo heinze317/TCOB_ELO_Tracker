@@ -7,7 +7,7 @@ import requests, json, copy
 from pprint import pprint
 
 
-# Dictionary to hold headers
+# Dictionaries
 HEADERS = {"X-API-Key":'1fdb95e58c5e4b91b4d628a1a405d9e5'}
 
 
@@ -173,17 +173,16 @@ def getMostRecentGame(charID, memID):
     ############################################################################################
     # Gets the most recent private game for each member of the clan
     ############################################################################################
-
+    
     # Define url
     url = ("https://www.bungie.net/Platform/Destiny/Stats/ActivityHistory/2/"+ str(memID)+ "/"
-           + str(charID) +"/?count=1&definitions=False&mode=32")
-    
+           + str(charID) +"/?count=1&definitions=False&mode=32&page=1")
     request = makeRequest(url)
-
-    try:
-        recentID = (request['Response']['data']['activities']['activityDetails']['instanceId'])
-    except:
-        recentID = 0
+    
+    recentGame = (request['Response']['data'])
+    
+    for i in recentGame:
+        recentID = (recentGame[i]['activities']['activityDetails']['instanceId'])
 
     return recentID
 
@@ -200,6 +199,10 @@ def defineLastGamePlayed(clanList):
     for i in clanList:
         memberIDs.append(i.memberID)
         memberChars.append(i.memberChars)
-            
+          
+    # Get the latest game played by each character in the clan
+    for j in memberIDs:
+        for k in memberChars:
+            lastGameIds.update({j : getMostRecentGame(k, j)})
                   
     return lastGameIds

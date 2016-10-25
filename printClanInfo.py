@@ -3,8 +3,19 @@
 # Bungie API app
 ############################################################################################
 
-from destinyInfo import getClanData, getCharacterNumber, buildClan, getMatchDetails, defineLastGamePlayed
+from destinyInfo import getClanData, getCharacterNumber, buildClan, getMatchDetails, defineLastGamePlayed, getMostRecentGame
 from pprint import pprint
+
+def printMostRecentGame():
+    
+    lastGames = []
+    
+    charID = getCharacterNumber(4611686018433260672)
+    
+    for ID in charID:
+        lastGames.append(getMostRecentGame(ID, 4611686018433260672))
+
+    pprint(lastGames)
 
 def printLastGame():
     
@@ -79,7 +90,10 @@ def main():
     #printMatchPlayers()
 
     # Print the members' last game
-    printLastGame()
+    #printLastGame()
+
+    # Print twelvevoltpro's chars most recent games
+    printMostRecentGame()
 
     return
 
