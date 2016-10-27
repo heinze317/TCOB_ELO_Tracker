@@ -3,35 +3,39 @@
 # Feeds that data to the reddit bot for posting
 ############################################################################################
 
-import requests, json, copy
+import requests, copy, json
 from pprint import pprint
 
 
 # Dictionaries
 HEADERS = {"X-API-Key":'1fdb95e58c5e4b91b4d628a1a405d9e5'}
+CLASS = {
+    2271682572: 'Warlock',
+    671679327: 'Hunter',
+    3655393761: 'Titan'
+    }
 
 
 class Member(object):
-    """A class outline for a member of the clan
+    """
+    A class outline for a member of the clan
     
     Attributes:
     displayName: the user's PSN name
     memberID: the user's Bungie member ID
     memberChars: the user's character IDs
     numClanGames: the number of clan only games played
-    clanKDR: the user's kill/death ratio for clan games
-    clanELO: the user's ELO for clan games
-    lastGamePlayed: the last clan only gameID played"""
+    clanKDR: the character's kill/death ratio for clan games
+    clanELO: the character's ELO for clan games
+    lastGamePlayed: the last clan only gameID played
+    """
 
     # Functions
-    def __init__(self, displayName, memberID, memberChars, numCLanGames, clanKDR, clanELO, lastGamePlayed):
+    def __init__(self, displayName, memberID, memberChars):
         self.displayName = displayName
         self.memberID = memberID
         self.memberChars = memberChars
-        self.numClanGames = numCLanGames
-        self.clanKDR = clanKDR
-        self.clanELO = clanELO
-        self.lastGamePlayed = lastGamePlayed
+       
 
     def __str__(self):
         return('Username: '+self.displayName+'\nMemberID: '+self.memberID+'\nCharacters: '
@@ -102,6 +106,9 @@ def buildClan():
     userNames = []
     destinyIDs = []
     characterNums = []
+    charInfo = []
+    clanChars = []
+    
 
     # Get mass amounts of information
     print('Getting clan data.....')
@@ -126,6 +133,18 @@ def buildClan():
         characterNums.append(getCharacterNumber(destinyIDs[x]))
         x += 1
     print('done!\n')
+    
+    
+    # Build each character's dictionary of info
+    for list in characterNums:
+        for char in list:
+            charDict = {'charNum' : char,
+                        'games' : 0,
+                        'KDR' : 0.0,
+                        'ELO' : 1000,
+                        'lastGame' : 0}
+            charInfo.append(charDict)
+        clanChars.append(charInfo)
         
     # Use the current info to build the clan class objects
     print('Building the member list.....')
@@ -133,15 +152,15 @@ def buildClan():
     x = 0
    
     for x in range(len(userNames)):
-        memberInstance = Member(userNames[x], destinyIDs[x], characterNums[x], 0, 0.0, 1000, 0)
+        memberInstance = Member(userNames[x], destinyIDs[x], clanChars[x])
         clanArray.append(memberInstance)
         x += 1
-   
+    
     print('done!\n')
        
-    return clanArray
+    return charInfo
 
-def isClanOnlyGame(gameInfo, clanList):
+def isClanOnlyGame(matchList, memberList):
     ############################################################################################
     # Compares the list of players in a game with the most current clan instance, 
     # If only clan members are listed, returns true.
@@ -169,40 +188,41 @@ def getMatchDetails(matchID):
 
     return matchPlayers
 
-def getMostRecentGame(charID, memID):
+def getMostRecentGame(**memberDict):
     ############################################################################################
-    # Gets the most recent private game for each member of the clan
+    # Gets the most recent private game for each member of the clan, one character at a time
     ############################################################################################
     
     # Define url
     url = ("https://www.bungie.net/Platform/Destiny/Stats/ActivityHistory/2/"+ str(memID)+ "/"
            + str(charID) +"/?count=1&definitions=False&mode=32&page=1")
     request = makeRequest(url)
-    
-    recentGame = (request['Response']['data'])
-    
-    for i in recentGame:
-        recentID = (recentGame[i]['activities']['activityDetails']['instanceId'])
-
-    return recentID
+        
+    try:
+        recentGame = request['Response']['data']['activities']
+        recentId = (recentGame[0]['activityDetails']['instanceId'])
+    except:
+        recentId = 0       
+   
+    return recentId
 
 def defineLastGamePlayed(clanList):
     ############################################################################################
     # Finds the last clan only game played for each member of the clan.
     ############################################################################################
     
-    memberIDs = []
-    memberChars = []
+    memberList = []
+    charList = []
+    memberInfo = {}
     lastGameIds = {}
 
-    # Extract the member IDs from the most current list
+    # Extract the member info from the most current list
     for i in clanList:
-        memberIDs.append(i.memberID)
-        memberChars.append(i.memberChars)
-          
-    # Get the latest game played by each character in the clan
-    for j in memberIDs:
-        for k in memberChars:
-            lastGameIds.update({j : getMostRecentGame(k, j)})
-                  
+       memberList.append(i.memberID)
+       charList.append(i.memberChars)
+       memberInfo.update({i.memberID : i.memberChars})
+
+    # Find each character's most recent private game
+    #for 
+
     return lastGameIds

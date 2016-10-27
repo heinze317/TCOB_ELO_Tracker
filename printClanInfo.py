@@ -36,8 +36,7 @@ def printAllData():
     tooBigList = getClanData()
 
     # Print the entire json object 
-    pprint(tooBigList)
-    
+    pprint(tooBigList)    
 
 def printUNMI():
 
@@ -49,6 +48,7 @@ def printUNMI():
         print(x, clanList[x]['destinyUserInfo']['displayName'],
                  clanList[x]['destinyUserInfo']['membershipId'])
         x+=1
+
 def printCharacters():
         
     charList = getCharacterNumber(4611686018433260672)
@@ -84,7 +84,7 @@ def main():
     #printCharacters()
 
     # Print the array of clan objects
-    #printClanArray()
+    printClanArray()
 
     # Print players in a specific match
     #printMatchPlayers()
@@ -93,7 +93,7 @@ def main():
     #printLastGame()
 
     # Print twelvevoltpro's chars most recent games
-    printMostRecentGame()
+    #printMostRecentGame()
 
     return
 
