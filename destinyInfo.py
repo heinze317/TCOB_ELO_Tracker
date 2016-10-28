@@ -105,9 +105,8 @@ def buildClan():
     clanArray = []
     userNames = []
     destinyIDs = []
-    characterNums = []
-    charInfo = []
     clanChars = []
+    characterNums = []
     
 
     # Get mass amounts of information
@@ -136,8 +135,9 @@ def buildClan():
     
     
     # Build each character's dictionary of info
-    for list in characterNums:
-        for char in list:
+    for lst in characterNums:
+        charInfo = []
+        for char in lst:
             charDict = {'charNum' : char,
                         'games' : 0,
                         'KDR' : 0.0,
@@ -145,7 +145,9 @@ def buildClan():
                         'lastGame' : 0}
             charInfo.append(charDict)
         clanChars.append(charInfo)
-        
+       
+     
+   
     # Use the current info to build the clan class objects
     print('Building the member list.....')
     
@@ -158,7 +160,7 @@ def buildClan():
     
     print('done!\n')
        
-    return charInfo
+    return clanArray
 
 def isClanOnlyGame(matchList, memberList):
     ############################################################################################
