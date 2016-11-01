@@ -25,11 +25,7 @@ def printLastGame():
     # Build the clan list
     clanList = buildClan()
 
-    # Build the dict containing each member and their chars' last game
-    lastGame.update(defineLastGamePlayed(clanList))
-
-    # Print the dict
-    pprint(lastGame)
+    defineLastGamePlayed(clanList)
 
 def printAllData():
     
@@ -84,13 +80,13 @@ def main():
     #printCharacters()
 
     # Print the array of clan objects
-    printClanArray()
+    #printClanArray()
 
     # Print players in a specific match
     #printMatchPlayers()
 
     # Print the members' last game
-    #printLastGame()
+    printLastGame()
 
     # Print twelvevoltpro's chars most recent games
     #printMostRecentGame()

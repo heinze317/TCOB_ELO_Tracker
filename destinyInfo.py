@@ -168,7 +168,13 @@ def isClanOnlyGame(matchList, memberList):
     # If only clan members are listed, returns true.
     ############################################################################################
 
-    return result
+    matchedPlayers = [item for item in memberList if item in matchList]
+
+    if matchedPlayers == matchList:
+        return True
+    else:
+        return False
+
 
 def getMatchDetails(matchID):
     ############################################################################################
@@ -213,13 +219,27 @@ def defineLastGamePlayed(clanList):
     # Finds the last clan only game played for each member of the clan.
     # Returns an updated instance of each Member containing the last match ID
     ############################################################################################ 
-    
-     '''   
+
+    # Make a list of members
+    memberList = []
     for i in clanList:
-        lastGameId = getMostRecentGame(i.memberID, 
-      
-
+        memberList.append(i.memberID)
+    
     # Find each character's most recent private game
-    #for 
+    for i in clanList:
+        for char in i.memberChars:
+            lastMatch = getMostRecentGame(i.memberID, char['charNum'])
 
-    return lastGameIds'''
+            # Find out if the most recent game is clan-only
+            matchPlayers = getMatchDetails(lastMatch)
+            clanOnly = isClanOnlyGame(matchPlayers, memberList)
+
+            # If it is clan-only, compare against the previous clan-only game
+            if clanOnly:
+                if lastMatch != char['lastGame']:
+                    char['games'] += 1
+                    char['lastGame'] = lastMatch
+
+
+                 
+    return clanList
