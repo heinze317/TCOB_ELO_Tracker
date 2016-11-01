@@ -190,7 +190,7 @@ def getMatchDetails(matchID):
 
     return matchPlayers
 
-def getMostRecentGame(**memberDict):
+def getMostRecentGame(memID, charID):
     ############################################################################################
     # Gets the most recent private game for each member of the clan, one character at a time
     ############################################################################################
@@ -211,20 +211,15 @@ def getMostRecentGame(**memberDict):
 def defineLastGamePlayed(clanList):
     ############################################################################################
     # Finds the last clan only game played for each member of the clan.
-    ############################################################################################
+    # Returns an updated instance of each Member containing the last match ID
+    ############################################################################################ 
     
-    memberList = []
-    charList = []
-    memberInfo = {}
-    lastGameIds = {}
-
-    # Extract the member info from the most current list
+     '''   
     for i in clanList:
-       memberList.append(i.memberID)
-       charList.append(i.memberChars)
-       memberInfo.update({i.memberID : i.memberChars})
+        lastGameId = getMostRecentGame(i.memberID, 
+      
 
     # Find each character's most recent private game
     #for 
 
-    return lastGameIds
+    return lastGameIds'''

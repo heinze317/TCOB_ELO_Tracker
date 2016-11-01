@@ -81,10 +81,10 @@ def main():
     #printUNMI()
 
     # Print twelvevoltpro's char list
-    printCharacters()
+    #printCharacters()
 
     # Print the array of clan objects
-    #printClanArray()
+    printClanArray()
 
     # Print players in a specific match
     #printMatchPlayers()
