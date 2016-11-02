@@ -10,22 +10,24 @@ def printMostRecentGame():
     
     lastGames = []
     
-    charID = getCharacterNumber(4611686018433260672)
+    charID = getCharacterNumber(4611686018445706444)
     
-    for ID in charID:
-        lastGames.append(getMostRecentGame(ID, 4611686018433260672))
+    for i in charID:
+        lastGames.append(getMostRecentGame(i, 4611686018445706444))
 
     pprint(lastGames)
 
 def printLastGame():
     
     clanList = []
-    lastGame = {}
-
+    
     # Build the clan list
     clanList = buildClan()
 
     defineLastGamePlayed(clanList)
+
+    # Print the clan list
+    print(*clanList, sep = '\n')
 
 def printAllData():
     
@@ -86,10 +88,10 @@ def main():
     #printMatchPlayers()
 
     # Print the members' last game
-    printLastGame()
+    #printLastGame()
 
     # Print twelvevoltpro's chars most recent games
-    #printMostRecentGame()
+    printMostRecentGame()
 
     return
 

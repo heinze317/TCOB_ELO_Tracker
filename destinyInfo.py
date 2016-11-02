@@ -15,7 +15,6 @@ CLASS = {
     3655393761: 'Titan'
     }
 
-
 class Member(object):
     """
     A class outline for a member of the clan
@@ -140,6 +139,8 @@ def buildClan():
         for char in lst:
             charDict = {'charNum' : char,
                         'games' : 0,
+                        'kills' : 0,
+                        'deaths' : 0,
                         'KDR' : 0.0,
                         'ELO' : 1000,
                         'lastGame' : 0}
@@ -175,8 +176,7 @@ def isClanOnlyGame(matchList, memberList):
     else:
         return False
 
-
-def getMatchDetails(matchID):
+def getMatchPlayers(matchID):
     ############################################################################################
     # Gets the details of a match, returns only the players in that game
     ############################################################################################
@@ -220,6 +220,7 @@ def defineLastGamePlayed(clanList):
     # Returns an updated instance of each Member containing the last match ID
     ############################################################################################ 
 
+    currentClanList = []
     # Make a list of members
     memberList = []
     for i in clanList:
@@ -231,15 +232,68 @@ def defineLastGamePlayed(clanList):
             lastMatch = getMostRecentGame(i.memberID, char['charNum'])
 
             # Find out if the most recent game is clan-only
-            matchPlayers = getMatchDetails(lastMatch)
-            clanOnly = isClanOnlyGame(matchPlayers, memberList)
+            if lastMatch != 0:
+                matchPlayers = getMatchPlayers(lastMatch)
+                clanOnly = isClanOnlyGame(matchPlayers, memberList)
 
-            # If it is clan-only, compare against the previous clan-only game
-            if clanOnly:
-                if lastMatch != char['lastGame']:
-                    char['games'] += 1
-                    char['lastGame'] = lastMatch
+                # If it is clan-only, compare against the previous clan-only game
+                if clanOnly:
+                    if lastMatch != char['lastGame']:
+                        char['lastGame'] = lastMatch
+                        char.update(updateData(char))
+                   
+            currentClanList.append(char)         
+    return currentClanList
 
+def getMatchDetails(matchID):
+    ############################################################################################
+    # Gets the details of a match
+    ############################################################################################
+   
+    # Define the url
+    url = ("https://www.bungie.net/Platform/Destiny/Stats/PostGameCarnageReport/"+ str(matchID) +"/?definitions=False") 
 
-                 
-    return clanList
+    request = makeRequest(url)
+    matchData = (request['Response']['data']['entries'])
+    
+    # Filter to important data
+    playerInfo = []
+    x = 0
+    for entires in matchData:
+        details = {
+        'charId' : (matchData[x]['characterId']),
+        'kills' : (matchData[x]['values']['kills']['basic']['value']),
+        'deaths' : (matchData[x]['values']['deaths']['basic']['value']),
+        'completed' : (matchData[x]['values']['completed']['basic']['value']),
+        'win' : (matchData[x]['values']['standing']['basic']['value'])
+        }
+        playerInfo.append(details)
+        x += 1    
+
+    return playerInfo
+
+def updateData(char):
+    ############################################################################################
+    # Makes updates to member data 
+    ############################################################################################
+    
+    # Get match details
+    matchNum = char['lastGame']
+    details = getMatchDetails(matchNum)
+
+    if char['charNum'] in details:
+        if details['completed'] == 1:
+            char['games'] += 1
+            char['kills'] += details['kills']
+            char['deaths'] += details['deaths']
+            char['KDR'] = (char['kills']/char['deaths'])
+            if details['win'] == 1:
+                char['ELO'] += 1
+            if details['win'] == 0:
+                char['ELO'] -= 1
+            
+    return char
+        
+    
+
+    

@@ -25,11 +25,8 @@ def main():
     oldData = copy.deepcopy(currentData)
     currentData = defineLastGamePlayed(currentClanList)
     
-    # Compare current data against previous update
-
-    
     # Make updates to members' data
-
+    
 
     # Post the updated info to the Reddit thread
       
