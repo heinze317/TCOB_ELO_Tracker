@@ -3,33 +3,37 @@
 ############################################################################################
 
 from destinyInfo import buildClan, defineLastGamePlayed
-import copy
+from redditInfo import editMainThread
+import copy, time
 
 
 
 def main():
 
-    oldData = {}
-    currentData = {}
-    oldClanList = []
-    currentClanList = []
-
-    # Get the clan members from the Bungie API
-    oldClanList = copy.deepcopy(currentClanList)
-    currentClanList = buildClan()
+    try:
+        print("Getting clan info")
+        # Get the most current clan list available
+        clanList = buildClan()
+        print("Done")
+    except:
+        print("Something went wrong getting the clan information")
     
-    # Compare current data against previous update
+    try:
+        print("Updating the clan with the correct information")
+        # Get the most current information for each member
+        currentClan = defineLastGamePlayed(clanList)
+        print("Done")
+    except:
+        print("Something went wrong updating the clan")
 
+    try:
+        print("Editing the thread")
+        # Edit the reddit thread with the most current information
+        editMainThread(currentClan)
+        print("Done")
+    except:
+        print("Something went wrong editing the Reddit thread")
 
-    # Get most recent clan-only private game 
-    oldData = copy.deepcopy(currentData)
-    currentData = defineLastGamePlayed(currentClanList)
-    
-    # Make updates to members' data
-    
-
-    # Post the updated info to the Reddit thread
-      
-   
+    time.sleep(300)   
 
 main()

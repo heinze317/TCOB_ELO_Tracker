@@ -62,7 +62,7 @@ def printClanArray():
 
 def printMatchPlayers():
 
-     matchList = getMatchDetails(5484545569)
+     matchList = getMatchDetails(5843948734)
 
      print(*matchList, sep = '\n')
 
@@ -88,10 +88,10 @@ def main():
     #printMatchPlayers()
 
     # Print the members' last game
-    #printLastGame()
+    printLastGame()
 
     # Print twelvevoltpro's chars most recent games
-    printMostRecentGame()
+    #printMostRecentGame()
 
     return
 

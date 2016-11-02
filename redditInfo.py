@@ -6,7 +6,8 @@
 import praw, OAuth2Util, time
 
 # Dictionary
-subredditName = 'tcob'
+SUBNAME = 'tcob'
+THREAD = '584ydw'
 
 
 
@@ -28,7 +29,7 @@ def makePost():
 
      # Post the thread
     try:
-        submission = r.submit(subredditName, threadTitle, text = textBody)
+        submission = r.submit(SUBNAME, threadTitle, text = textBody)
         print ("Success, check reddit!")
     except:
         print ("Failed, don't check reddit.")
@@ -44,3 +45,55 @@ def testTitle():
     title = ("Test Thread")
 
     return title
+
+def disclaimerText():
+    ############################################################################################
+    # States the use of the bot, how to reach the owner, etc inside the post body
+    ############################################################################################
+
+    disclaimer = ("I am a bot. My sole purpose in life is to stalk members of the Destiny TCOB "+
+                  "clan, and monitor their clan-only private games. I use that information "+
+                  "to rank the members based on how much they suck at Destiny, then post it "+
+                  "online for everyone's amusement. If you have an issue with any of the data "+
+                  "I post, please get ahold of /u/12vp here on "+
+                   "Reddit, or message twelvevoltpro on PSN to discuss. Thank you")
+
+    return disclaimer
+
+def headerText():
+    ############################################################################################
+    # Used to define the text at the top of the post
+    ############################################################################################
+
+    header = ("This data was compiled and computed using an automated program. There may be "+
+              "errors from time in the way the Bungie API responds to requests, or "+
+              "an oversight from the programmer. A few things to keep in mind:"+
+              "\n1. This only counts private games, containing only clan members."+
+              "\n2. This only counts games played to completion. Either time limit or "+
+              "score limit must be reached for the game to count."+
+              "\n3. Any other information you think I should add, just let me know!")
+
+def mainText(clanInfoToPost):
+    ############################################################################################
+    # Used to build the main text body of the post
+    ############################################################################################
+
+    header = headerText()
+    footer = disclaimerText()
+    
+    for members in clanInfoToPost:
+        text += ("Username: "+members['displayName']+
+                 "Characters: "+members['clanChars'][
+
+
+def editMainThread(clanInfo):
+    ############################################################################################
+    # Will be used to edit initial post, keeps post count to an absolute minimum
+    ############################################################################################
+
+    r = praw.Reddit('/r/tcob auto poster. Created by /u/12vp')
+    o = OAuth2Util.OAuth2Util(r)
+    o.refresh(force=True)
+    
+    # Build the body of the thread
+    body = mainText(clanInfo)

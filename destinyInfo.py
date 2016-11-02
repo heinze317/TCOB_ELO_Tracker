@@ -53,6 +53,20 @@ def makeRequest(url):
 
     return info
 
+def getClassHash(memberId, charId):
+    ############################################################################################
+    # Gets each member's character class using their member IDs and character ID
+    ############################################################################################
+
+    # Define the url
+    url = ("https://www.bungie.net/Platform/Destiny/2/Account/"+ str(memberId) + "/Character/"+ 
+           str(charId)+ "/?definitions=False")
+    
+    request = makeRequest(url)
+    charHash = (request['Response']['data']['characterBase']['classHash'])
+    
+    return CLASS.get(charHash) 
+
 def getCharacterNumber(idNum):
     ############################################################################################
     # Gets each member's character IDs using their member IDs
@@ -109,35 +123,29 @@ def buildClan():
     
 
     # Get mass amounts of information
-    print('Getting clan data.....')
-    clanInfo = getClanData()
-    print('done!\n')
+    clanInfo = getClanData()    
 
     # Filter to only user name and Destiny ID
-    print('Filtering data.....')
     x = 0
 
     for i in clanInfo:
         userNames.append(clanInfo[x]['destinyUserInfo']['displayName'])
         destinyIDs.append(clanInfo[x]['destinyUserInfo']['membershipId'])
         x += 1
-    print('done!\n')
     
     # Use the IDs to get character numbers
-    print('Getting character numbers.....')
     x = 0
 
     for x in range(len(userNames)):
         characterNums.append(getCharacterNumber(destinyIDs[x]))
         x += 1
-    print('done!\n')
-    
-    
+       
     # Build each character's dictionary of info
     for lst in characterNums:
         charInfo = []
         for char in lst:
             charDict = {'charNum' : char,
+                        'class' : 'null',
                         'games' : 0,
                         'kills' : 0,
                         'deaths' : 0,
@@ -150,8 +158,6 @@ def buildClan():
      
    
     # Use the current info to build the clan class objects
-    print('Building the member list.....')
-    
     x = 0
    
     for x in range(len(userNames)):
@@ -159,8 +165,6 @@ def buildClan():
         clanArray.append(memberInstance)
         x += 1
     
-    print('done!\n')
-       
     return clanArray
 
 def isClanOnlyGame(matchList, memberList):
@@ -169,12 +173,7 @@ def isClanOnlyGame(matchList, memberList):
     # If only clan members are listed, returns true.
     ############################################################################################
 
-    matchedPlayers = [item for item in memberList if item in matchList]
-
-    if matchedPlayers == matchList:
-        return True
-    else:
-        return False
+   return (set(matchList).issubset(memberList))
 
 def getMatchPlayers(matchID):
     ############################################################################################
@@ -230,6 +229,8 @@ def defineLastGamePlayed(clanList):
     for i in clanList:
         for char in i.memberChars:
             lastMatch = getMostRecentGame(i.memberID, char['charNum'])
+            charCLass = getClassHash(i.memberID, char['charNum'])
+            char['class'] = charCLass
 
             # Find out if the most recent game is clan-only
             if lastMatch != 0:
@@ -240,8 +241,7 @@ def defineLastGamePlayed(clanList):
                 if clanOnly:
                     if lastMatch != char['lastGame']:
                         char['lastGame'] = lastMatch
-                        char.update(updateData(char))
-                   
+                        char.update(updateData(char))                   
             currentClanList.append(char)         
     return currentClanList
 
@@ -281,19 +281,19 @@ def updateData(char):
     matchNum = char['lastGame']
     details = getMatchDetails(matchNum)
 
-    if char['charNum'] in details:
-        if details['completed'] == 1:
-            char['games'] += 1
-            char['kills'] += details['kills']
-            char['deaths'] += details['deaths']
-            char['KDR'] = (char['kills']/char['deaths'])
-            if details['win'] == 1:
-                char['ELO'] += 1
-            if details['win'] == 0:
-                char['ELO'] -= 1
+    for deets in details:
+        if deets['charId'] == char['charNum']:
+            if deets['completed'] == 1:
+                char['games'] += 1
+                char['kills'] += deets['kills']
+                char['deaths'] += deets['deaths']
+                if char['deaths'] == 0:
+                    char['KDR'] = char['kills']
+                else:
+                    char['KDR'] = (char['kills']/char['deaths'])
+                if deets['win'] == 0:
+                    char['ELO'] += 1
+                if deets['win'] == 1:
+                    char['ELO'] -= 1
             
     return char
-        
-    
-
-    
