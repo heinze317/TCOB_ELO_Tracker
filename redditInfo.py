@@ -7,7 +7,7 @@ import praw, OAuth2Util, time
 
 # Dictionary
 SUBNAME = 'tcob'
-THREAD = '584ydw'
+THREAD = 'https://www.reddit.com/r/TCOB/comments/584ydw'
 
 
 
@@ -77,14 +77,24 @@ def mainText(clanInfoToPost):
     ############################################################################################
     # Used to build the main text body of the post
     ############################################################################################
-
+    memberText = ""
     header = headerText()
     footer = disclaimerText()
-    
-    for members in clanInfoToPost:
-        text += ("Username: "+members['displayName']+
-                 "Characters: "+members['clanChars'][
 
+    for each in clanInfoToPost:
+        x = 0
+        memberText += ("Username: "+each['displayName']+"\n"+
+                       "Character Info: "+each[x]['class']+":\n"+
+                       "Clan Only Games: "+each[x]['games']+"\n"+
+                       "Clan Only Kills: "+each[x]['kills']+"\n"+
+                       "Clan Only Deaths: "+each[x]['deaths']+"\n"+
+                       "Clan Only KDR: "+each[x]['KDR']+"\n"+
+                       "Clan Only ELO: "+each[x]['ELO']+"\n"+
+                       "\n\n")
+        x += 1
+    text = (header + memberText + footer)
+
+    return text
 
 def editMainThread(clanInfo):
     ############################################################################################
@@ -94,6 +104,13 @@ def editMainThread(clanInfo):
     r = praw.Reddit('/r/tcob auto poster. Created by /u/12vp')
     o = OAuth2Util.OAuth2Util(r)
     o.refresh(force=True)
+
+    # Get the submission
+    submission = r.get_submission(THREAD)
+    selfText = submission.selftext
     
     # Build the body of the thread
-    body = mainText(clanInfo)
+    selfText = mainText(clanInfo)
+
+    # Edit the post
+    submission.edit(selfText)

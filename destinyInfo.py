@@ -213,7 +213,7 @@ def getMostRecentGame(memID, charID):
    
     return recentId
 
-def defineLastGamePlayed(clanList):
+def updateMemberData(clanList):
     ############################################################################################
     # Finds the last clan only game played for each member of the clan.
     # Returns an updated instance of each Member containing the last match ID

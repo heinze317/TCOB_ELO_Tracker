@@ -2,7 +2,7 @@
 # Main script to run functions through
 ############################################################################################
 
-from destinyInfo import buildClan, defineLastGamePlayed
+from destinyInfo import buildClan, updateMemberData
 from redditInfo import editMainThread
 import copy, time
 
@@ -21,18 +21,23 @@ def main():
     try:
         print("Updating the clan with the correct information")
         # Get the most current information for each member
-        currentClan = defineLastGamePlayed(clanList)
+        currentClan = updateMemberData(clanList)
         print("Done")
     except:
         print("Something went wrong updating the clan")
 
-    try:
+    '''try:
         print("Editing the thread")
         # Edit the reddit thread with the most current information
         editMainThread(currentClan)
         print("Done")
     except:
-        print("Something went wrong editing the Reddit thread")
+        print("Something went wrong editing the Reddit thread")'''
+    
+    print("Editing the thread")
+    # Edit the reddit thread with the most current information
+    editMainThread(currentClan)
+    print("Done")
 
     time.sleep(300)   
 
