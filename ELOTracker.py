@@ -21,23 +21,18 @@ def main():
     try:
         print("Updating the clan with the correct information")
         # Get the most current information for each member
-        currentClan = updateMemberData(clanList)
+        updateMemberData(clanList)
         print("Done")
     except:
         print("Something went wrong updating the clan")
 
-    '''try:
+    try:
         print("Editing the thread")
         # Edit the reddit thread with the most current information
-        editMainThread(currentClan)
+        editMainThread(clanList)
         print("Done")
     except:
-        print("Something went wrong editing the Reddit thread")'''
-    
-    print("Editing the thread")
-    # Edit the reddit thread with the most current information
-    editMainThread(currentClan)
-    print("Done")
+        print("Something went wrong editing the Reddit thread")
 
     time.sleep(300)   
 
