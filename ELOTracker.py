@@ -2,8 +2,8 @@
 # Main script to run functions through
 ############################################################################################
 
-from destinyInfo import buildClan, updateMemberData
-from redditInfo import editMainThread
+from destinyInfo import buildClanELO, updateMemberDataELO
+from redditInfo import editELOThread
 from excelInfo import createBook, writeInfo
 import copy, time
 
@@ -29,7 +29,7 @@ def main():
         try:
             print("Updating the clan")
             # Get the most current information for each member
-            updateMemberData(clanList)
+            updateMemberDataELO(clanList)
             print("Done")
         except:
             print("Something went wrong updating the clan")

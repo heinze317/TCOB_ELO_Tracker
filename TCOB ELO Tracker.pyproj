@@ -22,6 +22,9 @@
     <EnableUnmanagedDebugging>false</EnableUnmanagedDebugging>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="bannerTracker.py">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="excelInfo.py">
       <SubType>Code</SubType>
     </Compile>

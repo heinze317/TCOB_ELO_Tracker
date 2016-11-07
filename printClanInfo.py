@@ -3,7 +3,7 @@
 # Bungie API app
 ############################################################################################
 
-from destinyInfo import getClanData, getCharacterNumber, buildClan, getMatchDetails, updateMemberData, getMostRecentGame
+from destinyInfo import *
 from pprint import pprint
 
 def printMostRecentGame():
@@ -21,10 +21,13 @@ def printMemberData():
     
     clanList = []
     
-    # Build the clan list
-    clanList = buildClan()
+    # Build the clan list by choosing one
+    #clanList = buildClanELO()
+    clanList = buildClanBanner()
 
-    updateMemberData(clanList)
+    # Choose one, or both
+    #updateMemberDataELO(clanList)
+    updateMemberDataBanner(clanList)
 
     # Print the clan list
     print(*clanList, sep = '\n')
