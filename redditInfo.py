@@ -7,7 +7,7 @@ import praw, OAuth2Util, time
 
 # Dictionary
 SUBNAME = 'tcob'
-THREAD = 'https://www.reddit.com/r/TCOB/comments/584ydw'
+ELO = 'https://www.reddit.com/r/TCOB/comments/584ydw'
 
 
 
@@ -88,8 +88,10 @@ def mainText(clanInfoToPost):
         memberText += ("**Username:** "+ member.displayName+ "\n\n")
         for char in member.memberChars:
             memberText += (char['class']+":\n"+
-                       "Clan Only Games: "+str(char['games'])+"\n"+
-                       "Clan Only Kills: "+str(char['kills'])+"\n"+
+                       "Games: "+str(char['games'])+"\n"+
+                       "Wins: "+str(char['wins'])+"\n"+
+                       "Losses: "+str(char['losses'])+"\n"+
+                       "Kills: "+str(char['kills'])+"\n"+
                        "Clan Only Deaths: "+str(char['deaths'])+"\n"+
                        "Clan Only KDR: "+ ("%.2f" %char['KDR'])+"\n"+
                        "Clan Only ELO: "+str(char['ELO'])+"\n"+
@@ -110,7 +112,7 @@ def editMainThread(clanInfo):
     o.refresh(force=True)
 
     # Get the submission
-    submission = r.get_submission(THREAD)
+    submission = r.get_submission(ELO)
     selfText = submission.selftext
     
     # Build the body of the thread

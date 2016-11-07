@@ -147,10 +147,12 @@ def buildClan():
             charDict = {'charNum' : char,
                         'class' : 'null',
                         'games' : 0,
+                        'wins' : 0,
+                        'losses' : 0,
                         'kills' : 0,
                         'deaths' : 0,
                         'KDR' : 0.0,
-                        'ELO' : 1000,
+                        'ELO' : 0,
                         'lastGame' : 0}
             charInfo.append(charDict)
         clanChars.append(charInfo)
@@ -285,6 +287,7 @@ def updateData(char):
         if deets['charId'] == char['charNum']:
             if deets['completed'] == 1:
                 char['games'] += 1
+                char['ELO'] = 1000
                 char['kills'] += deets['kills']
                 char['deaths'] += deets['deaths']
                 if char['deaths'] == 0:
@@ -292,8 +295,10 @@ def updateData(char):
                 else:
                     char['KDR'] = (char['kills']/char['deaths'])
                 if deets['win'] == 0:
+                    char['wins'] += 1
                     char['ELO'] += 1
                 if deets['win'] == 1:
                     char['ELO'] -= 1
+                    char['losses'] += 1
             
     return char
