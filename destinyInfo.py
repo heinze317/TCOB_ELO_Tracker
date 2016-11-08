@@ -276,15 +276,16 @@ def getMatchPlayers(matchID):
 
     return matchPlayers
 
-def getMostRecentGame(memID, charID, gameMode):
+def getMostRecentGame(memID, charID, gameType):
     ############################################################################################
-    # Gets the most recent game for each member of the clan, one character at a time, depending
-    # On the mode asked for
+    # Gets the most recent game for each member of the clan, one character at a time
     ############################################################################################
     
+    mode = MODES.get(gameType)
+
     # Define url
     url = ("https://www.bungie.net/Platform/Destiny/Stats/ActivityHistory/2/"+ str(memID)+ "/"
-           + str(charID) +"/?count=1&definitions=False&mode=" +str(MODES.get(gameMode)) +"&page=1")
+           + str(charID) +"/?count=1&definitions=False&mode="+str(mode)+"&page=1")
     request = makeRequest(url)
         
     try:
@@ -323,7 +324,7 @@ def updateMemberDataELO(clanList):
                 if clanOnly:
                     if lastMatch != char['lastGame']:
                         char['lastGame'] = lastMatch
-                        char.update(updateData(char))                   
+                        char.update(updateDataELO(char))                   
             currentClanList.append(char)         
     return currentClanList
 
@@ -333,7 +334,8 @@ def getMatchDetailsELO(matchID):
     ############################################################################################
    
     # Define the url
-    url = ("https://www.bungie.net/Platform/Destiny/Stats/PostGameCarnageReport/"+ str(matchID) +"/?definitions=False") 
+    url = ("https://www.bungie.net/Platform/Destiny/Stats/PostGameCarnageReport/"+ 
+           str(matchID) +"/?definitions=False") 
 
     request = makeRequest(url)
     matchData = (request['Response']['data']['entries'])
@@ -356,14 +358,16 @@ def getMatchDetailsELO(matchID):
 
 def getMatchDetailsBanner(matchID):
     ############################################################################################
-    # Gets the details of a match for banner tracking
+    # Gets the details of a match for Iron Banner tracking
     ############################################################################################
    
     # Define the url
-    url = ("https://www.bungie.net/Platform/Destiny/Stats/PostGameCarnageReport/"+ str(matchID) +"/?definitions=False") 
+    url = ("https://www.bungie.net/Platform/Destiny/Stats/PostGameCarnageReport/"+ 
+           str(matchID) +"/?definitions=False") 
 
     request = makeRequest(url)
     matchData = (request['Response']['data']['entries'])
+    
     
     # Filter to important data
     playerInfo = []
@@ -383,6 +387,7 @@ def getMatchDetailsBanner(matchID):
         }
         playerInfo.append(details)
         x += 1    
+    
 
     return playerInfo
 
@@ -393,7 +398,7 @@ def updateDataELO(char):
     
     # Get match details
     matchNum = char['lastGame']
-    details = getMatchDetails(matchNum)
+    details = getMatchDetailsELO(matchNum)
 
     for deets in details:
         if deets['charId'] == char['charNum']:
@@ -417,7 +422,7 @@ def updateDataELO(char):
 
 def updateDataBanner(char):
     ############################################################################################
-    # Makes updates to member data for banner tracking
+    # Makes updates to member data for Iron Banner tracking
     ############################################################################################
     
     # Get match details
@@ -430,7 +435,7 @@ def updateDataBanner(char):
 
                 # Aggregates
                 char['games'] += 1
-                char['assists'] += ['assists']
+                char['assists'] += deets['assists']
                 char['kills'] += deets['kills']
                 char['deaths'] += deets['deaths']
                 char['orbs'] += deets['orbs']
@@ -480,7 +485,7 @@ def updateMemberDataBanner(clanList):
                 matchPlayers = getMatchPlayers(lastMatch)
                 isValid = isValidBannerGame(matchPlayers, memberList)
 
-                # If it is clan-only, compare against the previous clan-only game
+                # If it is a valid game, compare against the previous iron banner game
                 if isValid:
                     if lastMatch != char['lastGame']:
                         char['lastGame'] = lastMatch

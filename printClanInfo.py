@@ -6,6 +6,14 @@
 from destinyInfo import *
 from pprint import pprint
 
+def printMatchData():
+
+    matchNum = 5749533723
+
+    matchDeets = getMatchDetailsBanner(matchNum)
+
+    pprint(matchDeets)
+
 def printMostRecentGame():
     
     lastGames = []
@@ -95,6 +103,9 @@ def main():
 
     # Print twelvevoltpro's chars most recent games
     #printMostRecentGame()
+
+    # Print match data
+    #printMatchData()
 
     return
 
