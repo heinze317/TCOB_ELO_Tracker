@@ -6,6 +6,13 @@
 from destinyInfo import *
 from pprint import pprint
 
+def printKeys():
+    dict_ = {}
+    dict_ = getMatchDetailsBanner(5749533723)
+
+    for keys in dict_:
+        pprint(keys)
+
 def printMatchData():
 
     matchNum = 5749533723
@@ -106,6 +113,9 @@ def main():
 
     # Print match data
     #printMatchData()
+
+    # Print keys in a dict
+    #printKeys()
 
     return
 

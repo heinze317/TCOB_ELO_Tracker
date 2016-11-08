@@ -251,7 +251,7 @@ def buildClanBanner():
 def isClanOnlyGame(matchList, memberList):
     ############################################################################################
     # Compares the list of players in a game with the most current clan instance, 
-    # If only clan members are listed, returns true.
+    # If only clan members are listed, returns true. Used for the ELO tracker only
     ############################################################################################
 
    return (set(matchList).issubset(memberList))
@@ -380,10 +380,10 @@ def getMatchDetailsBanner(matchID):
         'completed' : (matchData[x]['values']['completed']['basic']['value']),
         'win' : (matchData[x]['values']['standing']['basic']['value']),
         'assists' : (matchData[x]['values']['assists']['basic']['value']),
-        'orbs' : (matchData[x]['extended']['values']['orbsDropped']['basic']['value']),
-        'precisionKills' : (matchData[x]['extended']['values']['precisionKills']['basic']['value']),
-        'spree' : (matchData[x]['extended']['values']['longestKillSpree']['basic']['value']),
-        'objectives' : (matchData[x]['extended']['values']['zonesCaptured']['basic']['value'])
+        'orbs' : (matchData[x].get('extended').get('values').get('orbsDropped',0).get('basic').get('value')),
+        'precisionKills' : (matchData[x].get('extended').get('values').get('precisionKills',0).get('basic').get('value')),
+        'spree' : (matchData[x].get('extended').get('values').get('longestKillingSpree',0).get('basic').get('value')),
+        'objectives' : (matchData[x].get('extended').get('values').get('zonesCaptured',0).get('basic').get('value')),
         }
         playerInfo.append(details)
         x += 1    
