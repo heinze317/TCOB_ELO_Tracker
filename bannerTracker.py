@@ -3,7 +3,7 @@
 ############################################################################################
 
 from destinyInfo import buildClanBanner, updateMemberDataBanner
-from excelInfo import *
+from excelInfo import writeCSV
 import time
 
 def main():
@@ -29,19 +29,17 @@ def main():
             updateMemberDataBanner(clanList)
             print("Done")
         except:
-            print("Something went wrong updating the clan")
-
-        print("Updating the spreadsheet")
-        writeCSV(clanList)
-        print("Done")
-
-        '''try:
+            print("Something went wrong updating the clan")       
+        
+        try:
             print("Updating the spreadsheet")
             # Update the spreadsheet with the current data
-            writeInfo(clanList)
+            writeCSV(clanList)
             print("Done")
         except:
-            print("Something went wrong writing the file")'''
+            print("Something went wrong writing the file")
+
+        time.sleep(300)
 
 
 main()

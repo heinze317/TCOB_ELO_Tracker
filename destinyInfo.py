@@ -380,10 +380,10 @@ def getMatchDetailsBanner(matchID):
         'completed' : (matchData[x]['values']['completed']['basic']['value']),
         'win' : (matchData[x]['values']['standing']['basic']['value']),
         'assists' : (matchData[x]['values']['assists']['basic']['value']),
-        'orbs' : (matchData[x].get('extended').get('values').get('orbsDropped',0).get('basic').get('value')),
-        'precisionKills' : (matchData[x].get('extended').get('values').get('precisionKills',0).get('basic').get('value')),
-        'spree' : (matchData[x].get('extended').get('values').get('longestKillingSpree',0).get('basic').get('value')),
-        'objectives' : (matchData[x].get('extended').get('values').get('zonesCaptured',0).get('basic').get('value')),
+        'orbs' : (matchData[x].get('extended',{}).get('values',{}).get('orbsDropped',{}).get('basic',{}).get('value',0)),
+        'precisionKills' : (matchData[x].get('extended',{}).get('values',{}).get('precisionKills',{}).get('basic',{}).get('value',0)),
+        'spree' : (matchData[x].get('extended',{}).get('values',{}).get('longestKillingSpree',{}).get('basic',{}).get('value',0)),
+        'objectives' : (matchData[x].get('extended',{}).get('values',{}).get('zonesCaptured',{}).get('basic',{}).get('value',0)),
         }
         playerInfo.append(details)
         x += 1    
