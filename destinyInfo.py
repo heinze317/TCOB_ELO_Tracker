@@ -476,7 +476,7 @@ def updateMemberDataBanner(clanList):
     # Find each character's most recent private game
     for i in clanList:
         for char in i.memberChars:
-            lastMatch = getMostRecentGame(i.memberID, char['charNum'], "Control")
+            lastMatch = getMostRecentGame(i.memberID, char['charNum'], "Iron Banner")
             charCLass = getClassHash(i.memberID, char['charNum'])
             char['class'] = charCLass
 
