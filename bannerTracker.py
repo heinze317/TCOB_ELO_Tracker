@@ -2,11 +2,16 @@
 # Main script to run functions pertaining to Iron Banner Tracking
 ############################################################################################
 
-from destinyInfo import buildClanBanner, updateMemberDataBanner
+from destinyInfo import buildClanBanner, updateMemberDataBanner, makeRequest
 from excelInfo import writeCSV
 import time
 
 def main():
+
+    # Check whether or not the event is live
+    request = makeRequest('https://www.bungie.net/Platform/Destiny/Events/?definitions=False')
+    requestList = request(['Response']['data']['events'])
+    isLive = (requestList[0]['vendor'].get('enabled', 'False'))
 
     # Build initial clanlist
     clanList = []
@@ -22,7 +27,13 @@ def main():
            print("Something went wrong getting the clan information")
 
     # Once the clan is built, loop until the process is killed
-    while True:
+    while isLive == 'true':
+        print("Checking Event Status")
+        # Check whether or not the event is live
+        request = makeRequest('https://www.bungie.net/Platform/Destiny/Events/?definitions=False')
+        requestList = request(['Response']['data']['events'])
+        isLive = (requestList[0]['vendor'].get('enabled', 'False')) 
+
         try:
             print("Updating the clan")
             # Get the most current information for each member

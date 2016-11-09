@@ -4,7 +4,12 @@
 ############################################################################################
 
 from destinyInfo import *
+from excelInfo import writeDB
 from pprint import pprint
+
+def writeSampleDB():
+    clanList = buildClanBanner()
+    writeDB(clanList)
 
 def printKeys():
     dict_ = {}
@@ -106,7 +111,7 @@ def main():
     #printMatchPlayers()
 
     # Print the members' updated info
-    printMemberData()
+    #printMemberData()
 
     # Print twelvevoltpro's chars most recent games
     #printMostRecentGame()
@@ -116,6 +121,9 @@ def main():
 
     # Print keys in a dict
     #printKeys()
+
+    # Create a sample DB
+    writeSampleDB()
 
     return
 
