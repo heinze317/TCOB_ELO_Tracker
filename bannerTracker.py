@@ -3,17 +3,14 @@
 ############################################################################################
 
 from destinyInfo import buildClanBanner, updateMemberDataBanner, makeRequest
-from excelInfo import writeCSV
+from DBHandler import writeIB, clanFromIB
 import time
 
 def main():
-
-    # Check whether or not the event is live
-    request = makeRequest('https://www.bungie.net/Platform/Destiny/Events/?definitions=False')
-    requestList = request(['Response']['data']['events'])
-    isLive = (requestList[0]['vendor'].get('enabled', 'False'))
-
-    # Build initial clanlist
+    
+    # Try getting information from the DB on start, if no data exists
+    # Build initial clanlist to begin the event
+       
     clanList = []
 
     if not clanList:
@@ -26,29 +23,35 @@ def main():
         except:
            print("Something went wrong getting the clan information")
 
-    # Once the clan is built, loop until the process is killed
-    while isLive == 'true':
-        print("Checking Event Status")
-        # Check whether or not the event is live
-        request = makeRequest('https://www.bungie.net/Platform/Destiny/Events/?definitions=False')
-        requestList = request(['Response']['data']['events'])
-        isLive = (requestList[0]['vendor'].get('enabled', 'False')) 
-
         try:
+            print("Looking for data for a rebuild")
+            clanFromIB(clanList)
+            print("Done")
+        except:
+            # If no data exists, build it from scratch
+            print("No data")
+            try:
+                # Build the initial DB
+                print("Building the initial database")
+                writeIB(clanList)
+                print("Done")
+            except:
+                print("Something went wrong building the database")
+            
+        
+    # Once the clan is built, loop until the process is killed
+    while True:
+        print("Updating the clan")
+        # Get the most current information for each member
+        updateMemberDataBanner(clanList)
+        print("Done")
+        '''try:
             print("Updating the clan")
             # Get the most current information for each member
             updateMemberDataBanner(clanList)
             print("Done")
         except:
-            print("Something went wrong updating the clan")       
-        
-        try:
-            print("Updating the spreadsheet")
-            # Update the spreadsheet with the current data
-            writeCSV(clanList)
-            print("Done")
-        except:
-            print("Something went wrong writing the file")
+            print("Something went wrong updating the clan")'''
 
         time.sleep(300)
 

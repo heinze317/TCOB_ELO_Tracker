@@ -4,12 +4,15 @@
 ############################################################################################
 
 from destinyInfo import *
-from excelInfo import writeDB
+from DBHandler import clanFromIB
 from pprint import pprint
 
-def writeSampleDB():
-    clanList = buildClanBanner()
-    writeDB(clanList)
+def printReturnFromDB():
+    clanList = 2305843009251334274
+
+    sample = clanFromIB(clanList)
+
+    pprint(sample)
 
 def printKeys():
     dict_ = {}
@@ -122,8 +125,8 @@ def main():
     # Print keys in a dict
     #printKeys()
 
-    # Create a sample DB
-    writeSampleDB()
+    # Test the return
+    printReturnFromDB()
 
     return
 

@@ -1,10 +1,9 @@
 ﻿############################################################################################
 # Gets the data for the clan from the Bungie API
-# Feeds that data to the reddit bot for posting
 ############################################################################################
 
 import requests, copy, json
-from pprint import pprint
+from DBHandler import updateIB, updateELO
 
 
 # Dictionaries
@@ -30,7 +29,6 @@ MODES = {
     "Supremecy" : 31,
     "Private" : 32
     }
-
 
 class Member(object):
     """
@@ -172,9 +170,7 @@ def buildClanELO():
                         'ELO' : 0,
                         'lastGame' : 0}
             charInfo.append(charDict)
-        clanChars.append(charInfo)
-       
-     
+        clanChars.append(charInfo)    
    
     # Use the current info to build the clan class objects
     x = 0
@@ -417,6 +413,9 @@ def updateDataELO(char):
                 if deets['win'] == 1:
                     char['ELO'] -= 1
                     char['losses'] += 1
+
+                # Update the DB
+                updateELO(char)
             
     return char
 
@@ -455,6 +454,9 @@ def updateDataBanner(char):
                     char['wins'] += 1
                 if deets['win'] == 1:
                     char['losses'] += 1
+
+                # Update the DB for the char
+                updateIB(char)
             
     return char
 
@@ -473,7 +475,7 @@ def updateMemberDataBanner(clanList):
     for i in clanList:
         memberList.append(i.memberID)
     
-    # Find each character's most recent private game
+    # Find each character's most recent banner game
     for i in clanList:
         for char in i.memberChars:
             lastMatch = getMostRecentGame(i.memberID, char['charNum'], "Iron Banner")
@@ -492,3 +494,10 @@ def updateMemberDataBanner(clanList):
                         char.update(updateDataBanner(char))                   
             currentClanList.append(char)         
     return currentClanList
+
+def calculateELO():
+    ############################################################################################
+    # Calculates the ELO rating for each team after a match
+    ############################################################################################
+
+    return 0

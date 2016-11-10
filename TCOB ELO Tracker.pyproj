@@ -25,7 +25,7 @@
     <Compile Include="bannerTracker.py">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="excelInfo.py">
+    <Compile Include="DBHandler.py">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="redditInfo.py">
@@ -40,7 +40,6 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="ib.csv" />
     <Content Include="oauth.ini" />
   </ItemGroup>
   <PropertyGroup>
