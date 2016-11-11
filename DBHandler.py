@@ -167,5 +167,4 @@ def clanFromIB(clanList):
             char['spree'] = charData[14]
             char['precisionKills'] = charData[15]
 
-   return clanList 
-               
+   return clanList                

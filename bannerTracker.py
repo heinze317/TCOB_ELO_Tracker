@@ -41,19 +41,15 @@ def main():
         
     # Once the clan is built, loop until the process is killed
     while True:
-        print("Updating the clan")
-        # Get the most current information for each member
-        updateMemberDataBanner(clanList)
-        print("Done")
-        '''try:
+       try:
             print("Updating the clan")
             # Get the most current information for each member
             updateMemberDataBanner(clanList)
             print("Done")
-        except:
-            print("Something went wrong updating the clan")'''
+       except:
+            print("Something went wrong updating the clan")
 
-        time.sleep(300)
+       time.sleep(300)
 
 
 main()

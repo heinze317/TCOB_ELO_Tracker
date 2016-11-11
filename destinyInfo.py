@@ -378,7 +378,7 @@ def getMatchDetailsBanner(matchID):
         'assists' : (matchData[x]['values']['assists']['basic']['value']),
         'orbs' : (matchData[x].get('extended',{}).get('values',{}).get('orbsDropped',{}).get('basic',{}).get('value',0)),
         'precisionKills' : (matchData[x].get('extended',{}).get('values',{}).get('precisionKills',{}).get('basic',{}).get('value',0)),
-        'spree' : (matchData[x].get('extended',{}).get('values',{}).get('longestKillingSpree',{}).get('basic',{}).get('value',0)),
+        'spree' : (matchData[x].get('extended',{}).get('values',{}).get('longestKillSpree',{}).get('basic',{}).get('value',0)),
         'objectives' : (matchData[x].get('extended',{}).get('values',{}).get('zonesCaptured',{}).get('basic',{}).get('value',0)),
         }
         playerInfo.append(details)
@@ -489,9 +489,9 @@ def updateMemberDataBanner(clanList):
 
                 # If it is a valid game, compare against the previous iron banner game
                 if isValid:
-                    if lastMatch != char['lastGame']:
-                        char['lastGame'] = lastMatch
-                        char.update(updateDataBanner(char))                   
+                    if char['lastGame'] != lastMatch:
+                       char['lastGame'] = lastMatch
+                       char.update(updateDataBanner(char))                   
             currentClanList.append(char)         
     return currentClanList
 
