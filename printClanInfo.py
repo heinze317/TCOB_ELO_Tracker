@@ -5,7 +5,14 @@
 
 from destinyInfo import *
 from DBHandler import clanFromIB
+from emailHandler import sendMessage
 from pprint import pprint
+
+def sendSampleEmail():
+
+    errorMsg = "Just testing this thing out"
+
+    sendMessage(errorMsg)
 
 def printReturnFromDB():
     clanList = 2305843009251334274
@@ -126,7 +133,10 @@ def main():
     #printKeys()
 
     # Test the return
-    printReturnFromDB()
+    #printReturnFromDB()
+
+    # Test the email server
+    sendSampleEmail()
 
     return
 

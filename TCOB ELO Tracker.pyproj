@@ -28,6 +28,9 @@
     <Compile Include="DBHandler.py">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="emailHandler.py">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="redditInfo.py">
       <SubType>Code</SubType>
     </Compile>

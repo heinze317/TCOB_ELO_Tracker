@@ -345,7 +345,9 @@ def getMatchDetailsELO(matchID):
         'kills' : (matchData[x]['values']['kills']['basic']['value']),
         'deaths' : (matchData[x]['values']['deaths']['basic']['value']),
         'completed' : (matchData[x]['values']['completed']['basic']['value']),
-        'win' : (matchData[x]['values']['standing']['basic']['value'])
+        'win' : (matchData[x]['values']['standing']['basic']['value']),
+        'team' : (matchData[x]['values']['team']['basic']['displayValue']),
+        'score' : (matchData[x]['values']['score']['basic']['value'])
         }
         playerInfo.append(details)
         x += 1    
@@ -363,6 +365,7 @@ def getMatchDetailsBanner(matchID):
 
     request = makeRequest(url)
     matchData = (request['Response']['data']['entries'])
+    matchStamp = (request['Response']['data']['period'])
     
     
     # Filter to important data
@@ -391,28 +394,37 @@ def updateDataELO(char):
     ############################################################################################
     # Makes updates to member data for ELO tracking
     ############################################################################################
+
+    teams = {}
     
     # Get match details
     matchNum = char['lastGame']
     details = getMatchDetailsELO(matchNum)
+    teams = calculateELO(details)
 
     for deets in details:
         if deets['charId'] == char['charNum']:
             if deets['completed'] == 1:
+
+                # Aggregates
                 char['games'] += 1
-                char['ELO'] = 1000
                 char['kills'] += deets['kills']
                 char['deaths'] += deets['deaths']
+
+                # Conditionals
                 if char['deaths'] == 0:
-                    char['KDR'] = char['kills']
+                   char['KDR'] = char['kills']
                 else:
                     char['KDR'] = (char['kills']/char['deaths'])
+
                 if deets['win'] == 0:
                     char['wins'] += 1
-                    char['ELO'] += 1
+                    
                 if deets['win'] == 1:
-                    char['ELO'] -= 1
                     char['losses'] += 1
+
+                # Update the ELO rating
+
 
                 # Update the DB
                 updateELO(char)
@@ -495,9 +507,27 @@ def updateMemberDataBanner(clanList):
             currentClanList.append(char)         
     return currentClanList
 
-def calculateELO():
+def calculateELO(matchDetails):
     ############################################################################################
-    # Calculates the ELO rating for each team after a match
+    # Calculates the ELO rating for each team after a match. Things considered:
+    # Win/lose, opposing teams' average ELO rating pre-game, score, handicapped by players
     ############################################################################################
+    alpha = []
+    bravo = []
+
+    # Get the team breakdown
+    for deets in matchDetails:
+        if deets['team'] == 'Alpha':
+            alpha.append(deets['charId'])
+            alphaScore += deets['score']
+        if deets['team'] == 'Bravo':
+            bravo.append(deets['charId'])
+            bravoScore += deets['score']
+
+        # Find the winner
+        if deets['win'] == 0 and deets['team'] == 'Alpha':
+            winner = alpha
+        else:
+            winner = bravo
 
     return 0

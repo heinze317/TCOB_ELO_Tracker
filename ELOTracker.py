@@ -5,13 +5,23 @@
 from destinyInfo import buildClanELO, updateMemberDataELO
 from redditInfo import editELOThread
 from DBHandler import writeELO, clanFromELO
+from emailHandler import sendMessage
 import time
+
+MESSAGES = {
+    1 : "The tracker has been restarted",
+    2 : "The tracker failed to build the clan",
+    3 : "The tracker failed to update the clan",
+    4 : "The tracker failed to build the DB",
+    5 : "The tracker failed to update the reddit thread",
+    6 : "The tracker failed for an unknown reason"
+    }
 
 def main():
     
     # Try getting information from the DB on start, if no data exists
     # Build initial clanlist to begin the event
-       
+    sendMessage(MESSAGES.get(1))
     clanList = []
 
     if not clanList:
@@ -23,6 +33,7 @@ def main():
            print("Done")
         except:
            print("Something went wrong getting the clan information")
+           sendMessage(MESSAGES.get(2))
 
         try:
             print("Looking for data for a rebuild")
@@ -38,6 +49,7 @@ def main():
                 print("Done")
             except:
                 print("Something went wrong building the database")
+                sendMessage(MESSAGES.get(4))
             
         
     # Once the clan is built, loop until the process is killed
@@ -49,6 +61,15 @@ def main():
             print("Done")
        except:
             print("Something went wrong updating the clan")
+            sendMessage(MESSAGES.get(3))
+
+       try:
+            print("Editing the reddit post")
+            editELOThread(clanList)
+            print("Done")
+       except:
+            ("Something went wrong editing the thread")
+            sendMessage(MESSAGES.get(5))
 
        time.sleep(300)
 
