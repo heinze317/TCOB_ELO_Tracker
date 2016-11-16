@@ -167,4 +167,14 @@ def clanFromIB(clanList):
             char['spree'] = charData[14]
             char['precisionKills'] = charData[15]
 
-   return clanList                
+   return clanList       
+
+def getRequestedInfo(char, statToGet):  
+    ############################################################################################
+    # Retreives one stat at a time from the database
+    ############################################################################################ 
+    
+    c.execute("SELECT ? FROM ELO WHERE CharNum = ?", (statToGet, char))
+    stat = c.fetchone()
+    
+    return stat   

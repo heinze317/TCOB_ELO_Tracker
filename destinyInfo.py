@@ -2,8 +2,8 @@
 # Gets the data for the clan from the Bungie API
 ############################################################################################
 
-import requests, copy, json
-from DBHandler import updateIB, updateELO
+import requests, copy, json, math
+from DBHandler import updateIB, updateELO, getRequestedInfo
 
 
 # Dictionaries
@@ -297,8 +297,7 @@ def updateMemberDataELO(clanList):
     # Finds the last clan only game played for each member of the clan.
     # Returns an updated instance of each Member containing the last match ID
     ############################################################################################ 
-
-    currentClanList = []
+    
     # Make a list of members
     memberList = []
     for i in clanList:
@@ -320,9 +319,7 @@ def updateMemberDataELO(clanList):
                 if clanOnly:
                     if lastMatch != char['lastGame']:
                         char['lastGame'] = lastMatch
-                        char.update(updateDataELO(char))                   
-            currentClanList.append(char)         
-    return currentClanList
+                        char.update(updateCharDataELO(char))                     
 
 def getMatchDetailsELO(matchID):
     ############################################################################################
@@ -390,7 +387,7 @@ def getMatchDetailsBanner(matchID):
 
     return playerInfo
 
-def updateDataELO(char):
+def updateCharDataELO(char):
     ############################################################################################
     # Makes updates to member data for ELO tracking
     ############################################################################################
@@ -400,8 +397,7 @@ def updateDataELO(char):
     # Get match details
     matchNum = char['lastGame']
     details = getMatchDetailsELO(matchNum)
-    teams = calculateELO(details)
-
+    
     for deets in details:
         if deets['charId'] == char['charNum']:
             if deets['completed'] == 1:
@@ -419,17 +415,22 @@ def updateDataELO(char):
 
                 if deets['win'] == 0:
                     char['wins'] += 1
-                    
-                if deets['win'] == 1:
+                else:
                     char['losses'] += 1
 
-                # Update the ELO rating
+                if char['ELO'] == 0:
+                    char['ELO'] = 1000
 
+                # Update the ELO rating
+                teams = calculateELO(details)
+
+                if char['team'] == 'Alpha':
+                   char['ELO'] = teams.get('Alpha')
+                else:
+                   char['ELO'] = teams.get('Bravo')
 
                 # Update the DB
-                updateELO(char)
-            
-    return char
+                updateELO(char)   
 
 def updateDataBanner(char):
     ############################################################################################
@@ -514,20 +515,55 @@ def calculateELO(matchDetails):
     ############################################################################################
     alpha = []
     bravo = []
+    K = 32
 
     # Get the team breakdown
     for deets in matchDetails:
         if deets['team'] == 'Alpha':
             alpha.append(deets['charId'])
             alphaScore += deets['score']
+            alphaELO += getRequestedInfo(deets['charId'], 'ELO')
+
         if deets['team'] == 'Bravo':
             bravo.append(deets['charId'])
             bravoScore += deets['score']
+            bravoELO += getRequestedInfo(deets['charId'], 'ELO')
 
         # Find the winner
         if deets['win'] == 0 and deets['team'] == 'Alpha':
-            winner = alpha
+            sA = 1
+            bA = 0
         else:
-            winner = bravo
+            sA = 0
+            bA = 1
 
-    return 0
+    # Start calculating the resulting multiplier for each team
+    # Get the teams' average ELO 
+    alphaPlayers = len(alpha)
+    bravoPlayers = len(bravo)
+
+    alphaAvgELO = (alphaELO/alphaPlayers)
+    bravoAvgELO = (bravoELO/bravoPlayers)
+
+    # Calculate rating difference
+    rA = math.pow(10, (alphaAvgELO/400))
+    rB = math.pow(10, (bravoAvgELO/400))
+
+    # Calculate the expected outcome
+    eA = rA / (rA + rB)
+    eB = rB / (rA + rB)
+
+    # Calculate the modifier
+    if alphaScore > (bravoScore * 1.5) or bravoScore > (alphaScore * 1.5):
+        K += 2
+    
+    if alphaPlayer > bravoPlayers or bravoPlayers > alphaPlayers:
+        K += 2
+
+    # Calculate the updated ELO
+    aE = alphaAvgELO + K * (sA - eA)
+    bE = bravoAvgELO + K * (sB - eB)
+
+    teamInfo = {'Alpha' : aE, 'Bravo' : bE}   
+
+    return teamInfo
