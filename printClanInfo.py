@@ -3,7 +3,7 @@
 # Bungie API app
 ############################################################################################
 
-from destinyInfo import *
+from destinyHandler import *
 from DBHandler import clanFromIB
 from emailHandler import sendMessage
 from pprint import pprint

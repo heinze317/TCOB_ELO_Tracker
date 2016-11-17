@@ -1,9 +1,9 @@
 ﻿############################################################################################
-# Main script to run functions through
+# Main script to handle the ELO side
 ############################################################################################
 
-from destinyInfo import buildClanELO, updateMemberDataELO
-from redditInfo import editELOThread
+from destinyHandler import buildClanELO, updateMemberDataELO
+from redditHandler import editELOThread
 from DBHandler import writeELO, clanFromELO
 from emailHandler import sendMessage
 import time
@@ -27,48 +27,48 @@ def main():
     if not clanList:
          # If no, build it
         try:
-           print("Getting clan info")
+           #print("Getting clan info")
            # Get the most current clan list available
            clanList = buildClanELO()
-           print("Done")
+           #print("Done")
         except:
-           print("Something went wrong getting the clan information")
+           #print("Something went wrong getting the clan information")
            sendMessage(MESSAGES.get(2))
 
         try:
-            print("Looking for data for a rebuild")
+            #print("Looking for data for a rebuild")
             clanFromELO(clanList)
-            print("Done")
+            #print("Done")
         except:
             # If no data exists, build it from scratch
-            print("No data")
+            #print("No data")
             try:
                 # Build the initial DB
-                print("Building the initial database")
+                #print("Building the initial database")
                 writeELO(clanList)
-                print("Done")
+                #print("Done")
             except:
-                print("Something went wrong building the database")
+                #print("Something went wrong building the database")
                 sendMessage(MESSAGES.get(4))
             
         
     # Once the clan is built, loop until the process is killed
     while True:
        try:
-            print("Updating the clan")
+            #print("Updating the clan")
             # Get the most current information for each member
             updateMemberDataELO(clanList)
-            print("Done")
+            #print("Done")
        except:
-            print("Something went wrong updating the clan")
+            #print("Something went wrong updating the clan")
             sendMessage(MESSAGES.get(3))
 
        try:
-            print("Editing the reddit post")
+            #print("Editing the reddit post")
             editELOThread(clanList)
-            print("Done")
+            #print("Done")
        except:
-            ("Something went wrong editing the thread")
+            #print("Something went wrong editing the thread")
             sendMessage(MESSAGES.get(5))
 
        time.sleep(300)

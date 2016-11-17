@@ -567,3 +567,22 @@ def calculateELO(matchDetails):
     teamInfo = {'Alpha' : aE, 'Bravo' : bE}   
 
     return teamInfo
+
+def eventListener(reqEvent):
+    ############################################################################################
+    # Listens for events to go live, such as Iron Banner, SRL, etc...
+    ############################################################################################
+
+    request = makeRequest('https://www.bungie.net/Platform/Destiny/Advisors/V2/?definitions=False')
+    events = request['Response']['data']['activites']
+
+    # Look for the requested event and check it's status
+    if reqEvent in events:
+        status = events.get(['status'], 0)
+
+    if status == 0:
+        return -1
+    if status == 'true':
+        return True
+    if status == 'false':
+        return False

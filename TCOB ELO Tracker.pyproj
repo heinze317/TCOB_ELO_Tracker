@@ -5,7 +5,7 @@
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>8d114de1-1afb-4d07-96a1-2cc40d7b686c</ProjectGuid>
     <ProjectHome>.</ProjectHome>
-    <StartupFile>destinyInfo.py</StartupFile>
+    <StartupFile>destinyHandler.py</StartupFile>
     <SearchPath>
     </SearchPath>
     <WorkingDirectory>.</WorkingDirectory>
@@ -31,14 +31,17 @@
     <Compile Include="emailHandler.py">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="redditInfo.py">
+    <Compile Include="redditHandler.py">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="ELOTracker.py">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="destinyInfo.py" />
+    <Compile Include="destinyHandler.py" />
     <Compile Include="printClanInfo.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="trackerHandler.py">
       <SubType>Code</SubType>
     </Compile>
   </ItemGroup>
