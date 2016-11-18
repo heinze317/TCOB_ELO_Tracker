@@ -3,7 +3,7 @@
 ############################################################################################
 
 import requests, copy, json, math
-from DBHandler import updateIB, updateELO, getRequestedInfo
+from DBHandler import *
 
 
 # Dictionaries
@@ -319,7 +319,22 @@ def updateMemberDataELO(clanList):
                 if clanOnly:
                     if lastMatch != char['lastGame']:
                         char['lastGame'] = lastMatch
-                        char.update(updateCharDataELO(char))                     
+                        details = getMatchDetailsELO(lastMatch)
+                        char.update(updateCharDataELO(char, details))
+                                                
+    # Calculate the ELO rating
+    teams = calculateELO(details)
+    
+    # Update the ELO rating in the DB
+    for char in details:
+        if char['team'] == 'Alpha':
+           newELOFactor = teams.get('Alpha')           
+        else:
+           newELOFactor = teams.get('Bravo')
+           
+        oldELO = getRequestedInfo(char['charId'], 'ELO')
+        newELO *= (newELOFactor/oldELO)
+        updateOneStat(char['charId'], 'ELO', newELO) 
 
 def getMatchDetailsELO(matchID):
     ############################################################################################
@@ -387,17 +402,11 @@ def getMatchDetailsBanner(matchID):
 
     return playerInfo
 
-def updateCharDataELO(char):
+def updateCharDataELO(char, details):
     ############################################################################################
-    # Makes updates to member data for ELO tracking
+    # Makes updates to character data for ELO tracking
     ############################################################################################
 
-    teams = {}
-    
-    # Get match details
-    matchNum = char['lastGame']
-    details = getMatchDetailsELO(matchNum)
-    
     for deets in details:
         if deets['charId'] == char['charNum']:
             if deets['completed'] == 1:
@@ -421,16 +430,8 @@ def updateCharDataELO(char):
                 if char['ELO'] == 0:
                     char['ELO'] = 1000
 
-                # Update the ELO rating
-                teams = calculateELO(details)
-
-                if char['team'] == 'Alpha':
-                   char['ELO'] = teams.get('Alpha')
-                else:
-                   char['ELO'] = teams.get('Bravo')
-
                 # Update the DB
-                updateELO(char)   
+                updateCharDBELO(char)   
 
 def updateDataBanner(char):
     ############################################################################################
@@ -557,7 +558,7 @@ def calculateELO(matchDetails):
     if alphaScore > (bravoScore * 1.5) or bravoScore > (alphaScore * 1.5):
         K += 2
     
-    if alphaPlayer > bravoPlayers or bravoPlayers > alphaPlayers:
+    if alphaPlayers > bravoPlayers or bravoPlayers > alphaPlayers:
         K += 2
 
     # Calculate the updated ELO

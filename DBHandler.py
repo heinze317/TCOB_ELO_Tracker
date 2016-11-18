@@ -41,32 +41,40 @@ def updateIB(char):
 
         conn.commit()
                                      
-def updateELO(char):
+def updateCharDBELO(char):
     ############################################################################################
     # Edits the table one character at a time, on an as-needed basis 
     ############################################################################################
     
-    if char.get('games') == 0:
-        print("Something went wrong")
-    else:
-        # Get the info to update
-        row = [char.get('games'),
-               char.get('lastGame'),
-               char.get('kills'),
-               char.get('wins'),
-               char.get('losses'),
-               char.get('deaths'),
-               char.get('KDR'),
-               char.get('ELO'),
-               char.get('charNum')
-               ]
+    # Get the info to update
+    row = [char.get('games'),
+           char.get('lastGame'),
+           char.get('kills'),
+           char.get('wins'),
+           char.get('losses'),
+           char.get('deaths'),
+           char.get('KDR'),
+           char.get('ELO'),
+           char.get('charNum')
+           ]
 
-        # Updates the DB on a need-to-do basis
-        c.execute("UPDATE IronBanner SET Games = ?, LastGame = ?, Kills = ?, Wins = ?,"+
-                  "Losses = ?, Deaths = ?, KDR = ?, ELO = ? WHERE CharNum = ?", (row))
+    # Updates the DB on a need-to-do basis
+    c.execute("UPDATE IronBanner SET Games = ?, LastGame = ?, Kills = ?, Wins = ?,"+
+              "Losses = ?, Deaths = ?, KDR = ?, ELO = ? WHERE CharNum = ?", (row))
 
-        # Save the file
-        conn.commit()
+    # Save the file
+    conn.commit()
+
+def updateOneStat(char, stat, newValue):
+    ############################################################################################
+    # Updates one stat at a time to the database
+    ############################################################################################
+    
+    # Update the char stat to the new value
+    c.execute("UPDATE ELO SET ? = ? WHERE CharNum = ?", (stat, newValue, char))
+
+    # Save the file
+    c.commit()
 
 def writeIB(clanList):
     ############################################################################################
