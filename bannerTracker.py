@@ -2,7 +2,7 @@
 # Main script to run functions pertaining to Iron Banner Tracking
 ############################################################################################
 
-from destinyInfo import buildClanBanner, updateMemberDataBanner
+from destinyHandler import buildClanBanner, updateMemberDataBanner
 from DBHandler import writeIB, clanFromIB
 from emailHandler import sendMessage
 import time

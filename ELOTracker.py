@@ -4,7 +4,7 @@
 
 from destinyHandler import buildClanELO, updateMemberDataELO
 from redditHandler import editELOThread
-from DBHandler import writeELO, clanFromELO
+from DBHandler import writeELO, clanFromDBELO
 from emailHandler import sendMessage
 import time
 
@@ -37,7 +37,7 @@ def main():
 
         try:
             #print("Looking for data for a rebuild")
-            clanFromELO(clanList)
+            clanFromDBELO(clanList)
             #print("Done")
         except:
             # If no data exists, build it from scratch
@@ -54,15 +54,21 @@ def main():
         
     # Once the clan is built, loop until the process is killed
     while True:
-       try:
-            #print("Updating the clan")
-            # Get the most current information for each member
-            updateMemberDataELO(clanList)
-            #print("Done")
-       except:
-            #print("Something went wrong updating the clan")
-            sendMessage(MESSAGES.get(3))
-
+        
+       # Update every 5 minutes
+       for x in range(13):
+            try:
+                #print("Updating the clan")
+                # Get the most current information for each member
+                updateMemberDataELO(clanList)
+                #print("Done")
+            except:
+                #print("Something went wrong updating the clan")
+                sendMessage(MESSAGES.get(3))
+            time.sleep(300)
+            x += 1
+        
+       # Update the thread every hour from DB
        try:
             #print("Editing the reddit post")
             editELOThread(clanList)
@@ -71,6 +77,6 @@ def main():
             #print("Something went wrong editing the thread")
             sendMessage(MESSAGES.get(5))
 
-       time.sleep(300)
+       
 
 main()

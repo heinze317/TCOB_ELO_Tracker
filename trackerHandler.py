@@ -16,12 +16,15 @@
 
 from destinyHandler import eventListener
 from emailHandler import sendMessage
-import ELOTracker, bannerTracker, time, subprocess, os
+import ELOTracker, bannerTracker, time, subprocess, os, shutil, threading
 
 EVENTS = {
     1 : "ironbanner",
     2 : "srl"
     }
+
+SRCPATH = 'needstobedetermined'
+BUPATH = 'needstobedeterminedaswell'
 
 def getPID(process):
 
@@ -30,7 +33,25 @@ def getPID(process):
     except:
         return -1
 
-def main():
+def makeBackup():
+    ############################################################################################
+    # Makes a backup of the DB once every x hours (24?), saves 9 copies before deleting
+    ############################################################################################
+
+    while True:
+        # Make the copy, save to a backup-only folder
+        shutil.copy(SRCPATH, BUPATH)
+
+        # Rename the backup to contain a unique identifier, save up to 9
+
+
+        # Sleep for 24 hours
+        time.sleep(86400)
+
+def tracking():
+    ############################################################################################
+    # Makes sure the tracker is running, checks for special events. Runs once an hour
+    ############################################################################################
 
     while True:
         # Listen for the ELO tracker to make sure it's running as it should
@@ -52,13 +73,26 @@ def main():
             os.system("kill -9" + pid)
 
             # Start the event tracker
-            # For now, just the Iron Banner tracker
-
+            
 
             # Check the status again
             specEventActive = eventListener(EVENTS.get(1))
 
         time.sleep(3600)
 
+def main():
+    ############################################################################################
+    # Main function to handle threading 
+    ############################################################################################
+
+    while True:
+
+        # Define the threads
+        trackerThread = threading.Thread(target = tracking)
+        backUpThread = threading.Thread(target = makeBackup)
+
+        # Start the threads
+        trackerThread.start()
+        backUpThread.start()        
 
 main()

@@ -59,7 +59,7 @@ def updateCharDBELO(char):
            ]
 
     # Updates the DB on a need-to-do basis
-    c.execute("UPDATE IronBanner SET Games = ?, LastGame = ?, Kills = ?, Wins = ?,"+
+    c.execute("UPDATE ELO SET Games = ?, LastGame = ?, Kills = ?, Wins = ?,"+
               "Losses = ?, Deaths = ?, KDR = ?, ELO = ? WHERE CharNum = ?", (row))
 
     # Save the file
@@ -147,8 +147,33 @@ def createELO():
     
     # Save the file
     conn.commit()
+
+def clanFromDBELO(clanList):
+   ############################################################################################
+   # Builds the clan members' data from the last update of the DB
+   # Prevents starting from absolute scratch in case of data loss while program is running
+   # Also allows changes to be made on a as-needed basis from the backend
+   ############################################################################################
+
+   for i in clanList:
+        for char in i.memberChars:
+            num = char['charNum']
+            c.execute("SELECT * FROM ELO WHERE CharNum = ?", (num,))
+            charData = c.fetchone()
+
+            # Update char info
+            char['games'] = charData[4]
+            char['lastGame'] = charData[5]
+            char['kills'] = charData[6]
+            char['wins'] = charData[7]
+            char['losses'] = charData[8]
+            char['deaths'] = charData[9]
+            char['KDR'] = charData[10]
+            char['ELO'] = charData[11]
+            
+   return clanList       
     
-def clanFromIB(clanList):
+def clanFromDBIB(clanList):
    ############################################################################################
    # Builds the clan members' data from the last update of the DB
    # Prevents starting from absolute scratch in case of data loss while program is running

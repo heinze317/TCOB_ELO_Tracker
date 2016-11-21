@@ -3,7 +3,7 @@
 # The bot should be able to edit the original post to update that info
 ############################################################################################
 
-import praw, OAuth2Util, time
+import praw, OAuth2Util, time, DBHandler
 
 # Dictionary
 SUBNAME = 'tcob'
@@ -62,7 +62,7 @@ def disclaimerText():
 
     return disclaimer
 
-def headerTextELO():
+def headerText():
     ############################################################################################
     # Used to define the text at the top of the post for ELO tracking
     ############################################################################################
@@ -77,68 +77,27 @@ def headerTextELO():
 
     return header
 
-def headerTextBanner():
+def mainText(clanInfoToPost):
     ############################################################################################
-    # Used to define the text at the top of the post for Iron Banner tracking
+    # Used to build the main text body of the post. Stats pulled from DB instead of memory
     ############################################################################################
-
-    header = ("This data was compiled and computed using an automated program. There may be "+
-              "errors from time in the way the Bungie API responds to requests, or "+
-              "an oversight from the programmer. A few things to keep in mind:"+
-              "\n\n1. This only counts Iron Banner games, containing two or more clan members."+
-              "\n\n2. This only counts games played to completion. Either time limit or "+
-              "score limit must be reached for the game to count."+
-              "\n\n3. This is only for fun, don't take the awards too seriously!\n\n\n\n")
-
-    return header
-
-def mainTextELO(clanInfoToPost):
-    ############################################################################################
-    # Used to build the main text body of the post
-    ############################################################################################
-    memberText = "Data: \n\n"
+    memberText = "**Data:** \n\n"
     header = headerTextELO()
     footer = disclaimerText()
 
     for member in clanInfoToPost:
         memberText += ("**Username:** "+ member.displayName+ "\n\n")
         for char in member.memberChars:
-            memberText += (char['class']+":\n"+
-                       "Games: "+str(char['games'])+"\n"+
-                       "Wins: "+str(char['wins'])+"\n"+
-                       "Losses: "+str(char['losses'])+"\n"+
-                       "Kills: "+str(char['kills'])+"\n"+
-                       "Clan Only Deaths: "+str(char['deaths'])+"\n"+
-                       "Clan Only KDR: "+ ("%.2f" %char['KDR'])+"\n"+
-                       "Clan Only ELO: "+str(char['ELO'])+"\n"+
+            memberText += ("**"+char['class']+":**\n"+
+                       "Games: "+str(getRequestedInfo(char['charNum'], 'Games'))+"\n"+
+                       "Wins: "+str(getRequestedInfo(char['charNum'], 'Wins'))+"\n"+
+                       "Losses: "+str(getRequestedInfo(char['charNum'], 'Losses'))+"\n"+
+                       "Kills: "+str(getRequestedInfo(char['charNum'], 'Kills'))+"\n"+
+                       "Deaths: "+str(getRequestedInfo(char['charNum'], 'Deaths'))+"\n"+
+                       "KDR: "+ ("%.2f" %getRequestedInfo(char['charNum'], 'KDR'))+"\n"+
+                       "ELO: "+str(getRequestedInfo(char['charNum'], 'ELO'))+"\n"+
                        "\n\n")
-        memberText+= ("----------------------------------------------\n\n\n\n")
-       
-    text = (header + memberText + footer)
-
-    return text
-
-def mainTextBanner(clanInfoToPost):
-    ############################################################################################
-    # Used to build the main text body of the post
-    ############################################################################################
-    memberText = "Data: \n\n"
-    header = headerTextBanner()
-    footer = disclaimerText()
-
-    for member in clanInfoToPost:
-        memberText += ("**Username:** "+ member.displayName+ "\n\n")
-        for char in member.memberChars:
-            memberText += (char['class']+":\n"+
-                       "Games: "+str(char['games'])+"\n"+
-                       "Wins: "+str(char['wins'])+"\n"+
-                       "Losses: "+str(char['losses'])+"\n"+
-                       "Kills: "+str(char['kills'])+"\n"+
-                       "Clan Only Deaths: "+str(char['deaths'])+"\n"+
-                       "Clan Only KDR: "+ ("%.2f" %char['KDR'])+"\n"+
-                       "Clan Only ELO: "+str(char['ELO'])+"\n"+
-                       "\n\n")
-        memberText+= ("----------------------------------------------\n\n\n\n")
+        memberText += ("----------------------------------------------\n\n\n\n")
        
     text = (header + memberText + footer)
 
@@ -161,25 +120,4 @@ def editELOThread(clanInfo):
     selfText = mainText(clanInfo)
 
     # Edit the post
-    submission.edit(selfText)
-
-def editBannerThread(clanInfo):
-    ############################################################################################
-    # Will be used to edit initial post, keeps post count to an absolute minimum
-    ############################################################################################
-
-    r = praw.Reddit('/r/tcob auto poster. Created by /u/12vp')
-    o = OAuth2Util.OAuth2Util(r)
-    o.refresh(force=True)
-
-    # Get the submission
-    submission = r.get_submission(BANNER)
-    selfText = submission.selftext
-    
-    # Build the body of the thread
-    selfText = mainTextBanner(clanInfo)
-
-    # Edit the post
-    submission.edit(selfText)
-
-    
+    submission.edit(selfText)   
