@@ -22,7 +22,7 @@ Started as a fun way to track the clan members' Iron Banner games and their perf
 
 Date filter for special events to only keep data for current event
 
-!Function to check for new members/characters and add them to the DB!
+Function to check for new members/characters and add them to the DB (added 11/29)(needs testing)
 
 Ranking system to post the members from highest to lowest Elo score
 
