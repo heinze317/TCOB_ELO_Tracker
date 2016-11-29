@@ -16,7 +16,7 @@
 
 from destinyHandler import eventListener
 from emailHandler import sendMessage
-import ELOTracker, bannerTracker, time, subprocess, os, shutil, threading
+import ELOTracker, bannerTracker, time, subprocess, os, shutil, threading, datetime
 
 EVENTS = {
     1 : "ironbanner",
@@ -24,7 +24,7 @@ EVENTS = {
     }
 
 SRCPATH = 'needstobedetermined'
-BUPATH = 'needstobedeterminedaswell'
+BUPATH = 'needstobedeterminedaswell' + timeStamp
 
 def getPID(process):
 
@@ -35,15 +35,16 @@ def getPID(process):
 
 def makeBackup():
     ############################################################################################
-    # Makes a backup of the DB once every x hours (24?), saves 9 copies before deleting
+    # Makes a backup of the DB once every x hours (24?), saves x copies before deleting
     ############################################################################################
 
     while True:
-        # Make the copy, save to a backup-only folder
-        shutil.copy(SRCPATH, BUPATH)
-
-        # Rename the backup to contain a unique identifier, save up to 9
-
+        # Define the timeStamp
+        longTime = datetime.datetime.now()
+        timeStamp = longTime.strftime('%m_%d')
+        
+        # Make the copy w/ time stamp, save to a backup-only folder
+        shutil.copyfile(SRCPATH, BUPATH)
 
         # Sleep for 24 hours
         time.sleep(86400)

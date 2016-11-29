@@ -3,14 +3,12 @@
 # The bot should be able to edit the original post to update that info
 ############################################################################################
 
-import praw, OAuth2Util, time, DBHandler
+import praw, OAuth2Util, time, datetime, DBHandler
 
 # Dictionary
 SUBNAME = 'tcob'
 ELO = 'https://www.reddit.com/r/TCOB/comments/584ydw'
 BANNER = 'Null'
-
-
 
 def makePost():
     ############################################################################################
@@ -81,7 +79,9 @@ def mainText(clanInfoToPost):
     ############################################################################################
     # Used to build the main text body of the post. Stats pulled from DB instead of memory
     ############################################################################################
-    memberText = "**Data:** \n\n"
+    timeLong = datetime.datetime.now()
+    timeStamp = timeLong.strftime('%m_%d_%Y %H:%M')
+    memberText = "**Upated: **" + timeStamp + "\n\n**Data:** \n\n"
     header = headerTextELO()
     footer = disclaimerText()
 

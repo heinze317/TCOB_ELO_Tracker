@@ -116,7 +116,7 @@ def writeELO(clanList):
                 char.get('charNum'),
                 char.get('class')
                ]
-            c.execute("INSERT INTO IronBanner VALUES(?,?,?,?,0,0,0,0,0,0,0,0)", (row))
+            c.execute("INSERT INTO ELO VALUES(?,?,?,?,0,0,0,0,0,0,0,0)", (row))
 
     # Save the file
     conn.commit()
@@ -210,4 +210,26 @@ def getRequestedInfo(char, statToGet):
     c.execute("SELECT ? FROM ELO WHERE CharNum = ?", (statToGet, char))
     stat = c.fetchone()
     
-    return stat   
+    return stat
+
+def getCharList(tableToFetch):
+
+    charList = []
+
+    c.execute("SELECT CharNum FROM ?", tableToFetch,)
+    for char in c.fetchall():
+        charList.append(char)
+
+    return charList
+
+def addCharsToDB(clanList, charsToAdd):
+    clanListToAdd = []
+
+    # Get the member data from the API using the list of non-intersecting chars
+    for members in clanList:
+        for chars in members.memberChars:
+            if chars['charNum'] in charsToAdd:
+                clanListToAdd.append(members)
+
+    # Reuse the existing function to only add the member info that needs adding
+    writeELO(clanListToAdd)

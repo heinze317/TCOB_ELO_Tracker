@@ -587,3 +587,27 @@ def eventListener(reqEvent):
         return True
     if status == 'false':
         return False
+
+def charCompare(clanList, tableToFetch):
+    ############################################################################################
+    # Compare a list of characters from the DB to the most current list from the API
+    # Any characters not found in the DB will need to be added to either a new member or
+    # A current member who has recently started that character
+    ############################################################################################
+
+    # Get the list of current characters from the DB
+    charsDB = getCharList(tableToFetch)
+
+    # Extract the character numbers from the most recent API call
+    charsAPI = []
+    for members in clanList:
+        for char in members.memberChars:
+            charsAPI.append(char['charNum'])
+
+    # Compare the two lists, find any non-intersecting characters
+    charsToUpdate = []
+    charsToUpdate.append([char for char in charsDB if char not in charsAPI])
+
+    # If updating needs to happen, do it
+    if len(charsToUpdate) > 0:
+        addCharsToDB(clanList, charsToUpdate)
