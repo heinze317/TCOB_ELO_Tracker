@@ -22,7 +22,10 @@
     <EnableUnmanagedDebugging>false</EnableUnmanagedDebugging>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="bannerTracker.py">
+    <Compile Include="bannerTrackerControl.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="bannerTrackerRift.py">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="DBHandler.py">

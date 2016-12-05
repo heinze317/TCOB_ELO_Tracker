@@ -182,7 +182,7 @@ def buildClanELO():
     
     return clanArray
 
-def buildClanBanner():
+def buildClanBannerControl():
     ############################################################################################
     # Builds the clan lists, then builds a list of Member objects containing all the information
     # We need to post and perform funtions on for Iron Banner Tracking
@@ -366,7 +366,7 @@ def getMatchDetailsELO(matchID):
 
     return playerInfo
 
-def getMatchDetailsBanner(matchID):
+def getMatchDetailsBannerControl(matchID):
     ############################################################################################
     # Gets the details of a match for Iron Banner tracking
     ############################################################################################
@@ -433,7 +433,7 @@ def updateCharDataELO(char, details):
                 # Update the DB
                 updateCharDBELO(char)   
 
-def updateDataBanner(char):
+def updateDataBannerControl(char):
     ############################################################################################
     # Makes updates to member data for Iron Banner tracking
     ############################################################################################
@@ -482,7 +482,7 @@ def isValidBannerGame(matchList, memberList):
     else:
         return False
 
-def updateMemberDataBanner(clanList):
+def updateMemberDataBannerControl(clanList):
     currentClanList = []
     # Make a list of members
     memberList = []
@@ -492,7 +492,7 @@ def updateMemberDataBanner(clanList):
     # Find each character's most recent banner game
     for i in clanList:
         for char in i.memberChars:
-            lastMatch = getMostRecentGame(i.memberID, char['charNum'], "Iron Banner")
+            lastMatch = getMostRecentGame(i.memberID, char['charNum'], "Iron Banner Control")
             charCLass = getClassHash(i.memberID, char['charNum'])
             char['class'] = charCLass
 
@@ -505,9 +505,7 @@ def updateMemberDataBanner(clanList):
                 if isValid:
                     if char['lastGame'] != lastMatch:
                        char['lastGame'] = lastMatch
-                       char.update(updateDataBanner(char))                   
-            currentClanList.append(char)         
-    return currentClanList
+                       char.update(updateDataBanner(char))                  
 
 def calculateELO(matchDetails):
     ############################################################################################
@@ -611,3 +609,173 @@ def charCompare(clanList, tableToFetch):
     # If updating needs to happen, do it
     if len(charsToUpdate) > 0:
         addCharsToDB(clanList, charsToUpdate)
+
+def buildClanBannerRift():
+    ############################################################################################
+    # Builds the clan lists, then builds a list of Member objects containing all the information
+    # We need to post and perform funtions on for Iron Banner Tracking
+    ############################################################################################
+
+    clanArray = []
+    userNames = []
+    destinyIDs = []
+    clanChars = []
+    characterNums = []
+    
+
+    # Get mass amounts of information
+    clanInfo = getClanData()    
+
+    # Filter to only user name and Destiny ID
+    x = 0
+
+    for i in clanInfo:
+        userNames.append(clanInfo[x]['destinyUserInfo']['displayName'])
+        destinyIDs.append(clanInfo[x]['destinyUserInfo']['membershipId'])
+        x += 1
+    
+    # Use the IDs to get character numbers
+    x = 0
+
+    for x in range(len(userNames)):
+        characterNums.append(getCharacterNumber(destinyIDs[x]))
+        x += 1
+       
+    # Build each character's dictionary of info
+    for lst in characterNums:
+        charInfo = []
+        for char in lst:
+            charDict = {'charNum' : char,
+                        'class' : 'null',
+                        'games' : 0,
+                        'wins' : 0,
+                        'losses' : 0,
+                        'kills' : 0,
+                        'deaths' : 0,
+                        'KDR' : 0.0,
+                        'assists' : 0,
+                        'orbs' : 0,
+                        'spree' : 0,
+                        'sparksCaptured' : 0,
+                        'sparksDelivered' : 0,
+                        'carrierKills' : 0,
+                        'precisionKills' : 0,
+                        'lastGame' : 0}
+            charInfo.append(charDict)
+        clanChars.append(charInfo)     
+   
+    # Use the current info to build the clan class objects
+    x = 0
+   
+    for x in range(len(userNames)):
+        memberInstance = Member(userNames[x], destinyIDs[x], clanChars[x])
+        clanArray.append(memberInstance)
+        x += 1
+    
+    return clanArray
+
+def getMatchDetailsBannerRift(matchID):
+    ############################################################################################
+    # Gets the details of a match for Iron Banner tracking
+    ############################################################################################
+   
+    # Define the url
+    url = ("https://www.bungie.net/Platform/Destiny/Stats/PostGameCarnageReport/"+ 
+           str(matchID) +"/?definitions=False") 
+
+    request = makeRequest(url)
+    matchData = (request['Response']['data']['entries'])
+    matchStamp = (request['Response']['data']['period'])
+    
+    
+    # Filter to important data
+    playerInfo = []
+    x = 0
+    for entires in matchData:
+        details = {
+        'charId' : (matchData[x]['characterId']),
+        'kills' : (matchData[x]['values']['kills']['basic']['value']),
+        'deaths' : (matchData[x]['values']['deaths']['basic']['value']),
+        'completed' : (matchData[x]['values']['completed']['basic']['value']),
+        'win' : (matchData[x]['values']['standing']['basic']['value']),
+        'assists' : (matchData[x]['values']['assists']['basic']['value']),
+        'orbs' : (matchData[x].get('extended',{}).get('values',{}).get('orbsDropped',{}).get('basic',{}).get('value',0)),
+        'precisionKills' : (matchData[x].get('extended',{}).get('values',{}).get('precisionKills',{}).get('basic',{}).get('value',0)),
+        'spree' : (matchData[x].get('extended',{}).get('values',{}).get('longestKillSpree',{}).get('basic',{}).get('value',0)),
+        'sparksCaptured' : (matchData[x].get('extended',{}).get('values',{}).get('sparksCaptured',{}).get('basic',{}).get('value',0)),
+        'sparksDelivered' : (matchData[x].get('extended',{}).get('values',{}).get('slamDunks',{}).get('basic',{}).get('value',0)),
+        'carrierKills' : (matchData[x].get('extended',{}).get('values',{}).get('carrierKills',{}).get('basic',{}).get('value',0)),
+        }
+        playerInfo.append(details)
+        x += 1    
+    
+
+    return playerInfo
+
+def updateMemberDataBannerRift(clanList):
+    currentClanList = []
+    # Make a list of members
+    memberList = []
+    for i in clanList:
+        memberList.append(i.memberID)
+    
+    # Find each character's most recent banner game
+    for i in clanList:
+        for char in i.memberChars:
+            lastMatch = getMostRecentGame(i.memberID, char['charNum'], "Iron Banner")
+            charCLass = getClassHash(i.memberID, char['charNum'])
+            char['class'] = charCLass
+
+            # Find out if the most recent game is valid to begin counting
+            if lastMatch != 0:
+                matchPlayers = getMatchPlayers(lastMatch)
+                isValid = isValidBannerGame(matchPlayers, memberList)
+
+                # If it is a valid game, compare against the previous iron banner game
+                if isValid:
+                    if char['lastGame'] != lastMatch:
+                       char['lastGame'] = lastMatch
+                       char.update(updateDataBanner(char)) 
+
+def updateDataBannerRift(char):
+    ############################################################################################
+    # Makes updates to member data for Iron Banner tracking
+    ############################################################################################
+    
+    # Get match details
+    matchNum = char['lastGame']
+    details = getMatchDetailsBannerRift(matchNum)
+
+    for deets in details:
+        if deets['charId'] == char['charNum']:
+            if deets['completed'] == 1:
+
+                # Aggregates
+                char['games'] += 1
+                char['assists'] += deets['assists']
+                char['kills'] += deets['kills']
+                char['deaths'] += deets['deaths']
+                char['orbs'] += deets['orbs']
+                char['precisionKills'] += deets['precisionKills']
+                char['sparksCaptured'] += deets['sparksCaptured']
+                char['sparksDelivered'] += deets['sparksDelivered']
+                char['carrierKills'] += deets['carrierKills']
+
+                # Conditionals
+                if char['deaths'] == 0:
+                    char['KDR'] = char['kills']
+                else:
+                    char['KDR'] = (char['kills']/char['deaths'])
+
+                if char['spree'] < deets['spree']:
+                    char['spree'] = deets['spree']
+
+                if deets['win'] == 0:
+                    char['wins'] += 1
+                if deets['win'] == 1:
+                    char['losses'] += 1
+
+                # Update the DB for the char
+                updateIBRift(char)
+            
+    return char

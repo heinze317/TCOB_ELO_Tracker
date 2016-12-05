@@ -16,7 +16,7 @@
 
 from destinyHandler import eventListener
 from emailHandler import sendMessage
-import ELOTracker, bannerTracker, time, subprocess, os, shutil, threading, datetime
+import ELOTracker, bannerTrackerControl, time, subprocess, os, shutil, threading, datetime
 
 EVENTS = {
     1 : "ironbanner",

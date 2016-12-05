@@ -9,7 +9,7 @@ import csv, sqlite3
 conn = sqlite3.connect('clanTracker.db')
 c = conn.cursor()
 
-def updateIB(char):
+def updateIBControl(char):
     ############################################################################################
     # Edits the table one character at a time, on an as-needed basis 
     ############################################################################################
@@ -35,9 +35,43 @@ def updateIB(char):
                ]
    
         # Updates the DB on a need-to-do basis
-        c.execute("UPDATE IronBanner SET CharClass = ?, Games = ?, LastGame = ?, Kills = ?, Wins = ?,"+
+        c.execute("UPDATE IronBannerControl SET CharClass = ?, Games = ?, LastGame = ?, Kills = ?, Wins = ?,"+
                   "Losses = ?, Deaths = ?, KDR = ?, Assists = ?, Orbs = ?, Objectives = ?,"+
                   "Spree = ?, Precision = ? WHERE CharNum = ?", (row))
+
+        conn.commit()
+
+def updateIBRift(char):
+    ############################################################################################
+    # Edits the table one character at a time, on an as-needed basis 
+    ############################################################################################
+
+    if char.get('games') == 0:
+        print("Something is not right!!!")
+    else:
+        # Get the info to update
+        row = [char.get('class'),
+               char.get('games'),
+               char.get('lastGame'),
+               char.get('kills'),
+               char.get('wins'),
+               char.get('losses'),
+               char.get('deaths'),
+               char.get('KDR'),
+               char.get('assists'),
+               char.get('orbs'),
+               char.get('sparksCaptured'),
+               char.get('sparksDelivered'),
+               char.get('carrierKills'),
+               char.get('spree'),
+               char.get('precisionKills'),
+               char.get('charNum')
+               ]
+   
+        # Updates the DB on a need-to-do basis
+        c.execute("UPDATE IronBanner SET CharClass = ?, Games = ?, LastGame = ?, Kills = ?, Wins = ?,"+
+                  "Losses = ?, Deaths = ?, KDR = ?, Assists = ?, Orbs = ?, Sparks Captured = ?,"+
+                  "Sparks Delivered = ?, Carrier Kills = ?, Spree = ?, Precision = ? WHERE CharNum = ?", (row))
 
         conn.commit()
                                      
@@ -76,14 +110,14 @@ def updateOneStat(char, stat, newValue):
     # Save the file
     c.commit()
 
-def writeIB(clanList):
+def writeIBControl(clanList):
     ############################################################################################
     # Saves the initial data to the DB. This allows the program to update only what
     # Needs updated per character
     ############################################################################################
 
     # Make sure the DB exists
-    createIB()
+    createIBControl()
 
     # Write the db
     for i in clanList:
@@ -94,7 +128,29 @@ def writeIB(clanList):
                 char.get('charNum'),
                 char.get('class')
                ]
-            c.execute("INSERT INTO IronBanner VALUES(?,?,?,?,0,0,0,0,0,0,0,0,0,0,0,0)", (row))
+            c.execute("INSERT INTO IronBannerControl VALUES(?,?,?,?,0,0,0,0,0,0,0,0,0,0,0,0)", (row))
+
+    conn.commit()
+
+def writeIBRift(clanList):
+    ############################################################################################
+    # Saves the initial data to the DB. This allows the program to update only what
+    # Needs updated per character
+    ############################################################################################
+
+    # Make sure the DB exists
+    createIBRift()
+
+    # Write the db
+    for i in clanList:
+        for char in i.memberChars:
+            row = [
+                i.displayName,
+                i.memberID,
+                char.get('charNum'),
+                char.get('class')
+               ]
+            c.execute("INSERT INTO IronBannerRift VALUES(?,?,?,?,0,0,0,0,0,0,0,0,0,0,0,0,0,0)", (row))
 
     conn.commit()
 
@@ -121,16 +177,30 @@ def writeELO(clanList):
     # Save the file
     conn.commit()
 
-def createIB():
+def createIBControl():
     ############################################################################################
     # Creates the IB table. Should be run once per event 
     ############################################################################################
 
     # Make the table
-    c.execute("CREATE TABLE IF NOT EXISTS IronBanner (Username TEXT, MemberID INTEGER, CharNum INTEGER, CharClass TEXT,"+
+    c.execute("CREATE TABLE IF NOT EXISTS IronBannerControl (Username TEXT, MemberID INTEGER, CharNum INTEGER, CharClass TEXT,"+
                 "Games INTEGER, LastGame INTEGER, Kills INTEGER, Wins INTEGER, Losses INTEGER,"+
                 "Deaths INTEGER, KDR REAL, Assists INTEGER, Orbs INTEGER, Objectives INTEGER,"+
                 "Spree INTEGER, Precision INTEGER)")
+    
+    # Save the file
+    conn.commit()
+
+def createIBRift():
+    ############################################################################################
+    # Creates the IB table. Should be run once per event 
+    ############################################################################################
+
+    # Make the table
+    c.execute("CREATE TABLE IF NOT EXISTS IronBannerRift (Username TEXT, MemberID INTEGER, CharNum INTEGER, CharClass TEXT,"+
+                "Games INTEGER, LastGame INTEGER, Kills INTEGER, Wins INTEGER, Losses INTEGER,"+
+                "Deaths INTEGER, KDR REAL, Assists INTEGER, Orbs INTEGER, Sparks Captured INTEGER,"+
+                "Sparks Delivered INTEGER, Carrier Kills INTEGER, Spree INTEGER, Precision INTEGER)")
     
     # Save the file
     conn.commit()
@@ -173,7 +243,7 @@ def clanFromDBELO(clanList):
             
    return clanList       
     
-def clanFromDBIB(clanList):
+def clanFromDBIBControl(clanList):
    ############################################################################################
    # Builds the clan members' data from the last update of the DB
    # Prevents starting from absolute scratch in case of data loss while program is running
@@ -183,7 +253,7 @@ def clanFromDBIB(clanList):
    for i in clanList:
         for char in i.memberChars:
             num = char['charNum']
-            c.execute("SELECT * FROM IronBanner WHERE CharNum = ?", (num,))
+            c.execute("SELECT * FROM IronBannerControl WHERE CharNum = ?", (num,))
             charData = c.fetchone()
 
             # Update char info
@@ -200,7 +270,38 @@ def clanFromDBIB(clanList):
             char['spree'] = charData[14]
             char['precisionKills'] = charData[15]
 
-   return clanList       
+   return clanList      
+
+def clanFromDBIBRift(clanList):
+   ############################################################################################
+   # Builds the clan members' data from the last update of the DB
+   # Prevents starting from absolute scratch in case of data loss while program is running
+   # Also allows changes to be made on a as-needed basis from the backend
+   ############################################################################################
+
+   for i in clanList:
+        for char in i.memberChars:
+            num = char['charNum']
+            c.execute("SELECT * FROM IronBannerRift WHERE CharNum = ?", (num,))
+            charData = c.fetchone()
+
+            # Update char info
+            char['games'] = charData[4]
+            char['lastGame'] = charData[5]
+            char['kills'] = charData[6]
+            char['wins'] = charData[7]
+            char['losses'] = charData[8]
+            char['deaths'] = charData[9]
+            char['KDR'] = charData[10]
+            char['assists'] = charData[11]
+            char['orbs'] = charData[12]
+            char['sparksCaptured'] = charData[13]
+            char['sparksDelivered'] = charData[14]
+            char['carrierKills'] = charData[15]
+            char['spree'] = charData[16]
+            char['precisionKills'] = charData[17]
+
+   return clanList  
 
 def getRequestedInfo(char, statToGet):  
     ############################################################################################

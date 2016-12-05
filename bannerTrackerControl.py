@@ -1,9 +1,9 @@
 ﻿############################################################################################
-# Main script to run functions pertaining to Iron Banner Tracking
+# Main script to run functions pertaining to Iron Banner Control Tracking
 ############################################################################################
 
-from destinyHandler import buildClanBanner, updateMemberDataBanner
-from DBHandler import writeIB, clanFromIB
+from destinyHandler import buildClanBannerControl, updateMemberDataBannerControl
+from DBHandler import writeIBControl, clanFromDBIBControl
 from emailHandler import sendMessage
 import time
 
@@ -19,14 +19,14 @@ def main():
         try:
            print("Getting clan info")
            # Get the most current clan list available
-           clanList = buildClanBanner()
+           clanList = buildClanBannerControl()
            print("Done")
         except:
            print("Something went wrong getting the clan information")
 
         try:
             print("Looking for data for a rebuild")
-            clanFromIB(clanList)
+            clanFromDBIBControl(clanList)
             print("Done")
         except:
             # If no data exists, build it from scratch
@@ -34,7 +34,7 @@ def main():
             try:
                 # Build the initial DB
                 print("Building the initial database")
-                writeIB(clanList)
+                writeIBControl(clanList)
                 print("Done")
             except:
                 print("Something went wrong building the database")
@@ -45,7 +45,7 @@ def main():
        try:
             print("Updating the clan")
             # Get the most current information for each member
-            updateMemberDataBanner(clanList)
+            updateMemberDataBannerControl(clanList)
             print("Done")
        except:
             print("Something went wrong updating the clan")
