@@ -735,7 +735,7 @@ def updateMemberDataBannerRift(clanList):
                 if isValid:
                     if char['lastGame'] != lastMatch:
                        char['lastGame'] = lastMatch
-                       char.update(updateDataBanner(char)) 
+                       char.update(updateDataBannerRift(char)) 
 
 def updateDataBannerRift(char):
     ############################################################################################

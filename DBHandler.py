@@ -69,9 +69,9 @@ def updateIBRift(char):
                ]
    
         # Updates the DB on a need-to-do basis
-        c.execute("UPDATE IronBanner SET CharClass = ?, Games = ?, LastGame = ?, Kills = ?, Wins = ?,"+
-                  "Losses = ?, Deaths = ?, KDR = ?, Assists = ?, Orbs = ?, Sparks Captured = ?,"+
-                  "Sparks Delivered = ?, Carrier Kills = ?, Spree = ?, Precision = ? WHERE CharNum = ?", (row))
+        c.execute("UPDATE IronBannerRift SET CharClass = ?, Games = ?, LastGame = ?, Kills = ?, Wins = ?,"+
+                  "Losses = ?, Deaths = ?, KDR = ?, Assists = ?, Orbs = ?, SparksCaptured = ?,"+
+                  "SparksDelivered = ?, CarrierKills = ?, Spree = ?, Precision = ? WHERE CharNum = ?", (row))
 
         conn.commit()
                                      

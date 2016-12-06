@@ -11,9 +11,11 @@ PASSWORD = 'roxie301'
 SERVER = smtplib.SMTP('smtp.gmail.com', 587)
 
 def sendMessage(msg):
+    SERVER.ehlo
     SERVER.starttls()
     SERVER.login(MAILTO, PASSWORD)
 
     SERVER.sendmail(MAILFROM, MAILTO, msg)
+    SERVER.close
     
 
