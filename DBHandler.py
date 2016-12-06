@@ -199,8 +199,8 @@ def createIBRift():
     # Make the table
     c.execute("CREATE TABLE IF NOT EXISTS IronBannerRift (Username TEXT, MemberID INTEGER, CharNum INTEGER, CharClass TEXT,"+
                 "Games INTEGER, LastGame INTEGER, Kills INTEGER, Wins INTEGER, Losses INTEGER,"+
-                "Deaths INTEGER, KDR REAL, Assists INTEGER, Orbs INTEGER, Sparks Captured INTEGER,"+
-                "Sparks Delivered INTEGER, Carrier Kills INTEGER, Spree INTEGER, Precision INTEGER)")
+                "Deaths INTEGER, KDR REAL, Assists INTEGER, Orbs INTEGER, SparksCaptured INTEGER,"+
+                "SparksDelivered INTEGER, CarrierKills INTEGER, Spree INTEGER, Precision INTEGER)")
     
     # Save the file
     conn.commit()
