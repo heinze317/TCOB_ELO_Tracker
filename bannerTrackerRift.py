@@ -1,4 +1,4 @@
-############################################################################################
+﻿############################################################################################
 # Main script to run functions pertaining to Iron Banner Rift Tracking
 ############################################################################################
 
@@ -31,7 +31,7 @@ def main():
             #print("Done")
         except:
             # If no data exists, build it from scratch
-            print("No data")
+            #print("No data")
             try:
                 # Build the initial DB
                 #print("Building the initial database")
@@ -52,8 +52,9 @@ def main():
        except:
             #print("Something went wrong updating the clan")
             sendMessage("Something went wrong updating the clan")
-
-       time.sleep(300)
+        
+       # Sleep for 5 minutes 
+       time.sleep(300) 
 
 
 main()

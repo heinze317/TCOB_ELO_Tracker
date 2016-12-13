@@ -435,7 +435,7 @@ def updateCharDataELO(char, details):
 
 def updateDataBannerControl(char):
     ############################################################################################
-    # Makes updates to member data for Iron Banner tracking
+    # Makes updates to character data for Iron Banner tracking Control gametype
     ############################################################################################
     
     # Get match details
@@ -470,9 +470,7 @@ def updateDataBannerControl(char):
                     char['losses'] += 1
 
                 # Update the DB for the char
-                updateIB(char)
-            
-    return char
+                updateIBControl(char)    
 
 def isValidBannerGame(matchList, memberList):
     memberMatches = set(matchList) & set(memberList)
@@ -492,7 +490,7 @@ def updateMemberDataBannerControl(clanList):
     # Find each character's most recent banner game
     for i in clanList:
         for char in i.memberChars:
-            lastMatch = getMostRecentGame(i.memberID, char['charNum'], "Iron Banner Control")
+            lastMatch = getMostRecentGame(i.memberID, char['charNum'], "Iron Banner")
             charCLass = getClassHash(i.memberID, char['charNum'])
             char['class'] = charCLass
 
@@ -713,7 +711,7 @@ def getMatchDetailsBannerRift(matchID):
     return playerInfo
 
 def updateMemberDataBannerRift(clanList):
-    currentClanList = []
+    
     # Make a list of members
     memberList = []
     for i in clanList:
@@ -732,6 +730,7 @@ def updateMemberDataBannerRift(clanList):
                 isValid = isValidBannerGame(matchPlayers, memberList)
 
                 # If it is a valid game, compare against the previous iron banner game
+                # Make updates if needed
                 if isValid:
                     if char['lastGame'] != lastMatch:
                        char['lastGame'] = lastMatch
@@ -739,7 +738,7 @@ def updateMemberDataBannerRift(clanList):
 
 def updateDataBannerRift(char):
     ############################################################################################
-    # Makes updates to member data for Iron Banner tracking
+    # Makes updates to character data for Iron Banner tracking Rift gametype
     ############################################################################################
     
     # Get match details
@@ -776,6 +775,4 @@ def updateDataBannerRift(char):
                     char['losses'] += 1
 
                 # Update the DB for the char
-                updateIBRift(char)
-            
-    return char
+                updateIBRift(char)    

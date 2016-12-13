@@ -4,7 +4,7 @@
 # the data on an "as-needed" basis
 ############################################################################################
 
-import csv, sqlite3
+import sqlite3
 
 conn = sqlite3.connect('clanTracker.db')
 c = conn.cursor()
