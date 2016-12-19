@@ -3,12 +3,14 @@
 # The bot should be able to edit the original post to update that info
 ############################################################################################
 
-import praw, OAuth2Util, time, datetime, DBHandler
+import praw, OAuth2Util, time, datetime
+from DBHandler import *
 
 # Dictionary
 SUBNAME = 'tcob'
 ELO = 'https://www.reddit.com/r/TCOB/comments/584ydw'
 BANNER = 'Null'
+VERSION = 'Beta'
 
 def makePost():
     ############################################################################################
@@ -51,12 +53,13 @@ def disclaimerText():
     ############################################################################################
 
     disclaimer = ("\n\n\n\n"+
-                   "I am a bot. My sole purpose in life is to stalk members of the Destiny TCOB "+
+                  "I am a bot. My sole purpose in life is to stalk members of the Destiny TCOB "+
                   "clan, and monitor their clan-only private games. I use that information "+
                   "to rank the members based on how much they suck at Destiny, then post it "+
                   "online for everyone's amusement. If you have an issue with any of the data "+
-                  "I post, please get ahold of /u/12vp here on "+
-                   "Reddit, or message twelvevoltpro on PSN to discuss. Thank you")
+                  "I post, please get ahold of **/u/12vp** here on "+
+                  "Reddit, or message **twelvevoltpro** on PSN to discuss. Thank you" +
+                  "\n\n\n\n\n\nProgram Version: " + VERSION)
 
     return disclaimer
 
@@ -71,7 +74,9 @@ def headerText():
               "\n\n1. This only counts private games, containing only clan members."+
               "\n\n2. This only counts games played to completion. Either time limit or "+
               "score limit must be reached for the game to count."+
-              "\n\n3. Any other information you think I should add, just let me know!\n\n\n\n")
+              "\n\n3. This thread will be updated one per hour, barring any errors. " +
+              "\n\n4. If you were just added to the clan, please wait 24 hours " +
+              "for your stats to start being accrued.\n\n\n\n")
 
     return header
 
@@ -81,8 +86,8 @@ def mainText(clanInfoToPost):
     ############################################################################################
     timeLong = datetime.datetime.now()
     timeStamp = timeLong.strftime('%m_%d_%Y %H:%M')
-    memberText = "**Upated: **" + timeStamp + "\n\n**Data:** \n\n"
-    header = headerTextELO()
+    memberText = "**Last Upated:** " + timeStamp + "\n\n**Data:** \n\n"
+    header = headerText()
     footer = disclaimerText()
 
     for member in clanInfoToPost:

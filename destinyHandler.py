@@ -1,5 +1,5 @@
 ﻿############################################################################################
-# Gets the data for the clan from the Bungie API
+# Gets the data for the clan from the Bungie API for all requests
 ############################################################################################
 
 import requests, copy, json, math
@@ -29,6 +29,10 @@ MODES = {
     "Supremecy" : 31,
     "Private" : 32
     }
+
+############################################################################################
+# Globally used functions
+############################################################################################
 
 class Member(object):
     """
@@ -124,6 +128,93 @@ def getClanData():
     
     return clanData
 
+def getMatchPlayers(matchID):
+    ############################################################################################
+    # Gets the details of a match, returns only the players in that game
+    ############################################################################################
+    matchPlayers = []
+    
+    # Define the url
+    url = ("https://www.bungie.net/Platform/Destiny/Stats/PostGameCarnageReport/"+ str(matchID) +"/?definitions=False") 
+
+    request = makeRequest(url)
+    matchData = (request['Response']['data']['entries'])
+
+    # Filter down to just the membership IDs
+    x = 0
+    for i in matchData:
+        matchPlayers.append(matchData[x]['player']['destinyUserInfo']['membershipId'])
+        x += 1
+
+    return matchPlayers
+
+def getMostRecentGame(memID, charID, gameType):
+    ############################################################################################
+    # Gets the most recent game for each member of the clan, one character at a time
+    ############################################################################################
+    
+    mode = MODES.get(gameType)
+
+    # Define url
+    url = ("https://www.bungie.net/Platform/Destiny/Stats/ActivityHistory/2/"+ str(memID)+ "/"
+           + str(charID) +"/?count=1&definitions=False&mode="+str(mode)+"&page=1")
+    request = makeRequest(url)
+        
+    try:
+        recentGame = request['Response']['data']['activities']
+        recentId = (recentGame[0]['activityDetails']['instanceId'])
+    except:
+        recentId = 0       
+   
+    return recentId
+
+def eventListener(reqEvent):
+    ############################################################################################
+    # Listens for events to go live, such as Iron Banner, SRL, etc...
+    ############################################################################################
+
+    request = makeRequest('https://www.bungie.net/Platform/Destiny/Advisors/V2/?definitions=False')
+    events = request['Response']['data']['activites']
+
+    # Look for the requested event and check it's status
+    if reqEvent in events:
+        status = events.get(['status'], 0)
+
+    if status == 0:
+        return -1
+    if status == 'true':
+        return True
+    if status == 'false':
+        return False
+
+def charCompare(clanList, tableToFetch):
+    ############################################################################################
+    # Compare a list of characters from the DB to the most current list from the API
+    # Any characters not found in the DB will need to be added to either a new member or
+    # A current member who has recently started that character
+    ############################################################################################
+
+    # Get the list of current characters from the DB
+    charsDB = getCharList(tableToFetch)
+
+    # Extract the character numbers from the most recent API call
+    charsAPI = []
+    for members in clanList:
+        for char in members.memberChars:
+            charsAPI.append(char['charNum'])
+
+    # Compare the two lists, find any non-intersecting characters
+    charsToUpdate = []
+    charsToUpdate.append([char for char in charsDB if char not in charsAPI])
+
+    # If updating needs to happen, do it
+    if len(charsToUpdate) > 0:
+        addCharsToDB(clanList, charsToUpdate)
+
+############################################################################################
+# Elo functions
+############################################################################################
+
 def buildClanELO():
     ############################################################################################
     # Builds the clan lists, then builds a list of Member objects containing all the information
@@ -181,6 +272,197 @@ def buildClanELO():
         x += 1
     
     return clanArray
+
+def isClanOnlyGame(matchList, memberList):
+    ############################################################################################
+    # Compares the list of players in a game with the most current clan instance, 
+    # If only clan members are listed, returns true. Used for the ELO tracker only
+    ############################################################################################
+
+   return (set(matchList).issubset(memberList))
+
+def getMatchDetailsELO(matchID):
+    ############################################################################################
+    # Gets the details of a match for ELO tracking
+    ############################################################################################
+   
+    # Define the url
+    url = ("https://www.bungie.net/Platform/Destiny/Stats/PostGameCarnageReport/"+ 
+           str(matchID) +"/?definitions=False") 
+
+    request = makeRequest(url)
+    matchData = (request['Response']['data']['entries'])
+    
+    # Filter to important data
+    playerInfo = []
+    x = 0
+    for entires in matchData:
+        details = {
+        'charId' : (matchData[x]['characterId']),
+        'kills' : (matchData[x]['values']['kills']['basic']['value']),
+        'deaths' : (matchData[x]['values']['deaths']['basic']['value']),
+        'completed' : (matchData[x]['values']['completed']['basic']['value']),
+        'win' : (matchData[x]['values']['standing']['basic']['value']),
+        'team' : (matchData[x].get('values',{}).get('team',{}).get('basic',{}).get('displayValue',0)),
+        'score' : (matchData[x]['values']['score']['basic']['value'])
+        }
+        playerInfo.append(details)
+        x += 1    
+
+    return playerInfo
+
+def updateMemberDataELO(clanList):
+    ############################################################################################
+    # Finds the last clan only game played for each member of the clan.
+    # Returns an updated instance of each Member containing the last match ID
+    ############################################################################################ 
+    
+    # Make a list of members
+    memberList = []
+    for i in clanList:
+        memberList.append(i.memberID)
+    
+    # Find each character's most recent private game
+    for i in clanList:
+        for char in i.memberChars:
+            lastMatch = getMostRecentGame(i.memberID, char['charNum'], "Private")
+            charCLass = getClassHash(i.memberID, char['charNum'])
+            char['class'] = charCLass
+
+            # Find out if the most recent game is clan-only
+            if lastMatch != 0:
+                matchPlayers = getMatchPlayers(lastMatch)
+                clanOnly = isClanOnlyGame(matchPlayers, memberList)
+
+                # If it is clan-only, compare against the previous clan-only game
+                if clanOnly:
+                    if lastMatch != char['lastGame']:
+                        char['lastGame'] = lastMatch
+                        details = getMatchDetailsELO(lastMatch)
+                        updateCharDataELO(char, details)
+                                                
+    """# Calculate the ELO rating
+    teams = calculateELO(details)
+    
+    # Update the ELO rating in the DB
+    for char in details:
+        if char['team'] == 'Alpha':
+           newELOFactor = teams.get('Alpha')           
+        else:
+           newELOFactor = teams.get('Bravo')
+           
+        oldELO = getRequestedInfo(char['charId'], 'ELO')
+        newELO *= (newELOFactor/oldELO)
+        updateOneStat(char['charId'], 'ELO', newELO)"""
+
+def updateCharDataELO(char, details):
+    ############################################################################################
+    # Makes updates to character data for ELO tracking
+    ############################################################################################
+
+    for deets in details:
+        if deets['charId'] == char['charNum']:
+            if deets['completed'] == 1:
+
+                # Aggregates
+                char['games'] += 1
+                char['kills'] += deets['kills']
+                char['deaths'] += deets['deaths']
+
+                # Conditionals
+                if char['ELO'] == 0:
+                    char['ELO'] = 1000
+
+                if char['deaths'] == 0:
+                   char['KDR'] = char['kills']
+                else:
+                    char['KDR'] = (char['kills']/char['deaths'])
+
+                if deets['win'] == 0:
+                    char['wins'] += 1
+                    char['ELO'] += 1
+                else:
+                    char['losses'] += 1
+                    char['ELO'] -= 1
+
+                # Update the DB
+                updateCharDBELO(char)
+                
+def calculateELO(matchDetails):
+    ############################################################################################
+    # Calculates the ELO rating for each team after a match. Things considered:
+    # Win/lose, opposing teams' average ELO rating pre-game, score, handicapped by players
+    ############################################################################################
+    alpha = []
+    bravo = []
+    alphaScore = 0
+    alphaELO = 0
+    bravoScore = 0
+    bravoELO = 0
+    sA = 0
+    bA = 0
+    K = 32
+
+    # Get the team breakdown
+    for deets in matchDetails:
+        if deets['team'] == 'Alpha':
+            alpha.append(deets['charId'])
+            alphaScore += deets['score']
+            alphaELO += getRequestedInfo(deets['charId'], 'ELO')
+
+        if deets['team'] == 'Bravo':
+            bravo.append(deets['charId'])
+            bravoScore += deets['score']
+            bravoELO += getRequestedInfo(deets['charId'], 'ELO')
+
+        # Find the winner
+        if deets['win'] == 0 and deets['team'] == 'Alpha':
+            sA = 1
+        else:
+            bA = 1
+
+    # Start calculating the resulting multiplier for each team
+    # Get the teams' average ELO 
+    alphaPlayers = len(alpha)
+    bravoPlayers = len(bravo)
+
+    alphaAvgELO = (alphaELO/alphaPlayers)
+    bravoAvgELO = (bravoELO/bravoPlayers)
+
+    # Calculate rating difference
+    rA = math.pow(10, (alphaAvgELO/400))
+    rB = math.pow(10, (bravoAvgELO/400))
+
+    # Calculate the expected outcome
+    eA = rA / (rA + rB)
+    eB = rB / (rA + rB)
+
+    # Calculate the modifier
+    if alphaScore > (bravoScore * 1.5) or bravoScore > (alphaScore * 1.5):
+        K += 2
+    
+    if alphaPlayers > bravoPlayers or bravoPlayers > alphaPlayers:
+        K += 2
+
+    # Calculate the updated ELO
+    aE = alphaAvgELO + K * (sA - eA)
+    bE = bravoAvgELO + K * (sB - eB)
+
+    teamInfo = {'Alpha' : aE, 'Bravo' : bE}   
+
+    return teamInfo   
+
+############################################################################################
+# Iron Banner Control functions
+############################################################################################
+
+def isValidBannerGame(matchList, memberList):
+    memberMatches = set(matchList) & set(memberList)
+
+    if len(memberMatches) > 1:
+        return True
+    else:
+        return False
 
 def buildClanBannerControl():
     ############################################################################################
@@ -244,128 +526,6 @@ def buildClanBannerControl():
     
     return clanArray
 
-def isClanOnlyGame(matchList, memberList):
-    ############################################################################################
-    # Compares the list of players in a game with the most current clan instance, 
-    # If only clan members are listed, returns true. Used for the ELO tracker only
-    ############################################################################################
-
-   return (set(matchList).issubset(memberList))
-
-def getMatchPlayers(matchID):
-    ############################################################################################
-    # Gets the details of a match, returns only the players in that game
-    ############################################################################################
-    matchPlayers = []
-    
-    # Define the url
-    url = ("https://www.bungie.net/Platform/Destiny/Stats/PostGameCarnageReport/"+ str(matchID) +"/?definitions=False") 
-
-    request = makeRequest(url)
-    matchData = (request['Response']['data']['entries'])
-
-    # Filter down to just the membership IDs
-    x = 0
-    for i in matchData:
-        matchPlayers.append(matchData[x]['player']['destinyUserInfo']['membershipId'])
-        x += 1
-
-    return matchPlayers
-
-def getMostRecentGame(memID, charID, gameType):
-    ############################################################################################
-    # Gets the most recent game for each member of the clan, one character at a time
-    ############################################################################################
-    
-    mode = MODES.get(gameType)
-
-    # Define url
-    url = ("https://www.bungie.net/Platform/Destiny/Stats/ActivityHistory/2/"+ str(memID)+ "/"
-           + str(charID) +"/?count=1&definitions=False&mode="+str(mode)+"&page=1")
-    request = makeRequest(url)
-        
-    try:
-        recentGame = request['Response']['data']['activities']
-        recentId = (recentGame[0]['activityDetails']['instanceId'])
-    except:
-        recentId = 0       
-   
-    return recentId
-
-def updateMemberDataELO(clanList):
-    ############################################################################################
-    # Finds the last clan only game played for each member of the clan.
-    # Returns an updated instance of each Member containing the last match ID
-    ############################################################################################ 
-    
-    # Make a list of members
-    memberList = []
-    for i in clanList:
-        memberList.append(i.memberID)
-    
-    # Find each character's most recent private game
-    for i in clanList:
-        for char in i.memberChars:
-            lastMatch = getMostRecentGame(i.memberID, char['charNum'], "Private")
-            charCLass = getClassHash(i.memberID, char['charNum'])
-            char['class'] = charCLass
-
-            # Find out if the most recent game is clan-only
-            if lastMatch != 0:
-                matchPlayers = getMatchPlayers(lastMatch)
-                clanOnly = isClanOnlyGame(matchPlayers, memberList)
-
-                # If it is clan-only, compare against the previous clan-only game
-                if clanOnly:
-                    if lastMatch != char['lastGame']:
-                        char['lastGame'] = lastMatch
-                        details = getMatchDetailsELO(lastMatch)
-                        char.update(updateCharDataELO(char, details))
-                                                
-    # Calculate the ELO rating
-    teams = calculateELO(details)
-    
-    # Update the ELO rating in the DB
-    for char in details:
-        if char['team'] == 'Alpha':
-           newELOFactor = teams.get('Alpha')           
-        else:
-           newELOFactor = teams.get('Bravo')
-           
-        oldELO = getRequestedInfo(char['charId'], 'ELO')
-        newELO *= (newELOFactor/oldELO)
-        updateOneStat(char['charId'], 'ELO', newELO) 
-
-def getMatchDetailsELO(matchID):
-    ############################################################################################
-    # Gets the details of a match for ELO tracking
-    ############################################################################################
-   
-    # Define the url
-    url = ("https://www.bungie.net/Platform/Destiny/Stats/PostGameCarnageReport/"+ 
-           str(matchID) +"/?definitions=False") 
-
-    request = makeRequest(url)
-    matchData = (request['Response']['data']['entries'])
-    
-    # Filter to important data
-    playerInfo = []
-    x = 0
-    for entires in matchData:
-        details = {
-        'charId' : (matchData[x]['characterId']),
-        'kills' : (matchData[x]['values']['kills']['basic']['value']),
-        'deaths' : (matchData[x]['values']['deaths']['basic']['value']),
-        'completed' : (matchData[x]['values']['completed']['basic']['value']),
-        'win' : (matchData[x]['values']['standing']['basic']['value']),
-        'team' : (matchData[x]['values']['team']['basic']['displayValue']),
-        'score' : (matchData[x]['values']['score']['basic']['value'])
-        }
-        playerInfo.append(details)
-        x += 1    
-
-    return playerInfo
-
 def getMatchDetailsBannerControl(matchID):
     ############################################################################################
     # Gets the details of a match for Iron Banner tracking
@@ -401,37 +561,6 @@ def getMatchDetailsBannerControl(matchID):
     
 
     return playerInfo
-
-def updateCharDataELO(char, details):
-    ############################################################################################
-    # Makes updates to character data for ELO tracking
-    ############################################################################################
-
-    for deets in details:
-        if deets['charId'] == char['charNum']:
-            if deets['completed'] == 1:
-
-                # Aggregates
-                char['games'] += 1
-                char['kills'] += deets['kills']
-                char['deaths'] += deets['deaths']
-
-                # Conditionals
-                if char['deaths'] == 0:
-                   char['KDR'] = char['kills']
-                else:
-                    char['KDR'] = (char['kills']/char['deaths'])
-
-                if deets['win'] == 0:
-                    char['wins'] += 1
-                else:
-                    char['losses'] += 1
-
-                if char['ELO'] == 0:
-                    char['ELO'] = 1000
-
-                # Update the DB
-                updateCharDBELO(char)   
 
 def updateDataBannerControl(char):
     ############################################################################################
@@ -472,14 +601,6 @@ def updateDataBannerControl(char):
                 # Update the DB for the char
                 updateIBControl(char)    
 
-def isValidBannerGame(matchList, memberList):
-    memberMatches = set(matchList) & set(memberList)
-
-    if len(memberMatches) > 1:
-        return True
-    else:
-        return False
-
 def updateMemberDataBannerControl(clanList):
     currentClanList = []
     # Make a list of members
@@ -503,110 +624,12 @@ def updateMemberDataBannerControl(clanList):
                 if isValid:
                     if char['lastGame'] != lastMatch:
                        char['lastGame'] = lastMatch
-                       char.update(updateDataBanner(char))                  
-
-def calculateELO(matchDetails):
-    ############################################################################################
-    # Calculates the ELO rating for each team after a match. Things considered:
-    # Win/lose, opposing teams' average ELO rating pre-game, score, handicapped by players
-    ############################################################################################
-    alpha = []
-    bravo = []
-    K = 32
-
-    # Get the team breakdown
-    for deets in matchDetails:
-        if deets['team'] == 'Alpha':
-            alpha.append(deets['charId'])
-            alphaScore += deets['score']
-            alphaELO += getRequestedInfo(deets['charId'], 'ELO')
-
-        if deets['team'] == 'Bravo':
-            bravo.append(deets['charId'])
-            bravoScore += deets['score']
-            bravoELO += getRequestedInfo(deets['charId'], 'ELO')
-
-        # Find the winner
-        if deets['win'] == 0 and deets['team'] == 'Alpha':
-            sA = 1
-            bA = 0
-        else:
-            sA = 0
-            bA = 1
-
-    # Start calculating the resulting multiplier for each team
-    # Get the teams' average ELO 
-    alphaPlayers = len(alpha)
-    bravoPlayers = len(bravo)
-
-    alphaAvgELO = (alphaELO/alphaPlayers)
-    bravoAvgELO = (bravoELO/bravoPlayers)
-
-    # Calculate rating difference
-    rA = math.pow(10, (alphaAvgELO/400))
-    rB = math.pow(10, (bravoAvgELO/400))
-
-    # Calculate the expected outcome
-    eA = rA / (rA + rB)
-    eB = rB / (rA + rB)
-
-    # Calculate the modifier
-    if alphaScore > (bravoScore * 1.5) or bravoScore > (alphaScore * 1.5):
-        K += 2
-    
-    if alphaPlayers > bravoPlayers or bravoPlayers > alphaPlayers:
-        K += 2
-
-    # Calculate the updated ELO
-    aE = alphaAvgELO + K * (sA - eA)
-    bE = bravoAvgELO + K * (sB - eB)
-
-    teamInfo = {'Alpha' : aE, 'Bravo' : bE}   
-
-    return teamInfo
-
-def eventListener(reqEvent):
-    ############################################################################################
-    # Listens for events to go live, such as Iron Banner, SRL, etc...
-    ############################################################################################
-
-    request = makeRequest('https://www.bungie.net/Platform/Destiny/Advisors/V2/?definitions=False')
-    events = request['Response']['data']['activites']
-
-    # Look for the requested event and check it's status
-    if reqEvent in events:
-        status = events.get(['status'], 0)
-
-    if status == 0:
-        return -1
-    if status == 'true':
-        return True
-    if status == 'false':
-        return False
-
-def charCompare(clanList, tableToFetch):
-    ############################################################################################
-    # Compare a list of characters from the DB to the most current list from the API
-    # Any characters not found in the DB will need to be added to either a new member or
-    # A current member who has recently started that character
-    ############################################################################################
-
-    # Get the list of current characters from the DB
-    charsDB = getCharList(tableToFetch)
-
-    # Extract the character numbers from the most recent API call
-    charsAPI = []
-    for members in clanList:
-        for char in members.memberChars:
-            charsAPI.append(char['charNum'])
-
-    # Compare the two lists, find any non-intersecting characters
-    charsToUpdate = []
-    charsToUpdate.append([char for char in charsDB if char not in charsAPI])
-
-    # If updating needs to happen, do it
-    if len(charsToUpdate) > 0:
-        addCharsToDB(clanList, charsToUpdate)
+                       char.update(updateDataBanner(char))
+                       
+############################################################################################
+# Iron Banner Rift functions
+# Event run on 12/6 - 12/12 did not update the DB. I suspect it has to do with the API.
+############################################################################################    
 
 def buildClanBannerRift():
     ############################################################################################

@@ -1,6 +1,7 @@
 ﻿############################################################################################
 # Main script to handle the ELO side
 ############################################################################################
+#!/usr/bin/python
 
 from destinyHandler import buildClanELO, updateMemberDataELO, charCompare
 from redditHandler import editELOThread
@@ -9,7 +10,7 @@ from emailHandler import sendMessage
 import time
 
 MESSAGES = {
-    1 : "The tracker has been restarted",
+    1 : "The ELOtracker has been restarted",
     2 : "The tracker failed to build the clan",
     3 : "The tracker failed to update the clan",
     4 : "The tracker failed to build the DB",
@@ -54,7 +55,7 @@ def main():
     while True:
         
        # Update every 5 minutes
-       for x in range(13):
+       for x in range(14):
             try:
                 #print("Updating the clan")
                 # Get the most current information for each member
@@ -67,18 +68,18 @@ def main():
             x += 1 
         
             # Update the thread every hour from DB
-            try:
-                #print("Editing the reddit post")
-                editELOThread(clanList)
-                #print("Done")
-            except:
-                #print("Something went wrong editing the thread")
-                sendMessage(MESSAGES.get(5))
+            if x == 13:
+                try:
+                    #print("Editing the reddit post")
+                    editELOThread(clanList)
+                    #print("Done")
+                except:
+                    #print("Something went wrong editing the thread")
+                    sendMessage(MESSAGES.get(5))
 
-            # Check for new members every hour
-            charCompare(clanList, 'ELO')
-            x = 0 # Reset the counter after the thread update
+                # Check for new members every hour
+                #charCompare(clanList, 'ELO')
 
-       
+                x = 0 # Reset the counter after the thread update  
 
 main()

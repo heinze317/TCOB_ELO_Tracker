@@ -4,9 +4,17 @@
 ############################################################################################
 
 from destinyHandler import *
-from DBHandler import clanFromIB
+from DBHandler import *
 from emailHandler import sendMessage
 from pprint import pprint
+
+def getStat():
+    char = 2305843009276547780
+    stat = 'Kills'
+
+    statSent = getRequestedInfo(char, stat)
+
+    print(statSent)
 
 def sendSampleEmail():
 
@@ -136,7 +144,10 @@ def main():
     #printReturnFromDB()
 
     # Test the email server
-    sendSampleEmail()
+    #sendSampleEmail()
+
+    # See the returned value from the DB
+    getStat()
 
     return
 

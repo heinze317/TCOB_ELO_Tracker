@@ -56,7 +56,7 @@ def tracking():
 
     while True:
         # Listen for the ELO tracker to make sure it's running as it should
-        pid = getPID('ELOTracker.py')
+        pid = getPID('ELOTracker')
 
         if pid == -1:
             # If the process doesn't exist, start it and notify the owner(s)
@@ -86,14 +86,12 @@ def main():
     # Main function to handle threading 
     ############################################################################################
 
-    while True:
+    # Define the threads
+    trackerThread = threading.Thread(target = tracking)
+    backUpThread = threading.Thread(target = makeBackup)
 
-        # Define the threads
-        trackerThread = threading.Thread(target = tracking)
-        backUpThread = threading.Thread(target = makeBackup)
-
-        # Start the threads
-        trackerThread.start()
-        backUpThread.start()        
+    # Start the threads
+    trackerThread.start()
+    backUpThread.start()        
 
 main()
