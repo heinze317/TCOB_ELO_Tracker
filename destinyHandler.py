@@ -388,7 +388,7 @@ def updateCharDataELO(char, details):
                 # Update the DB
                 updateCharDBELO(char)
                 
-def calculateELO(matchDetails):
+def calculateELOOld(matchDetails):
     ############################################################################################
     # Calculates the ELO rating for each team after a match. Things considered:
     # Win/lose, opposing teams' average ELO rating pre-game, score, handicapped by players
@@ -451,6 +451,10 @@ def calculateELO(matchDetails):
     teamInfo = {'Alpha' : aE, 'Bravo' : bE}   
 
     return teamInfo   
+
+def calculateELO(matchDetails):
+
+    return 0
 
 ############################################################################################
 # Iron Banner Control functions
