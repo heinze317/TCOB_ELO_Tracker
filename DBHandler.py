@@ -4,9 +4,10 @@
 # the data on an "as-needed" basis
 ############################################################################################
 
-import sqlite3
+import sqlite3, datetime, shutil
 
-conn = sqlite3.connect('clanTracker.db')
+DBFILE = '/home/pi/clantracker/clanTracker.db'
+conn = sqlite3.connect(DBFILE)
 c = conn.cursor()
 
 STATSELO = {
@@ -24,6 +25,15 @@ STATSELO = {
 ############################################################################################
 # Globally used table functions
 ############################################################################################
+def verifyTable(tableToVerify):
+
+    # Check for the table requested
+    valid = ("SELECT name from sqlite_master WHERE type = 'table' AND name = ?", (tableToVerify,))
+    
+    if valid == 0:
+        return False
+    else:
+        return True    
 
 def updateOneStat(char, stat, newValue):
     ############################################################################################
@@ -57,6 +67,19 @@ def addCharsToDB(clanList, charsToAdd):
 
     # Reuse the existing function to only add the member info that needs adding
     writeELO(clanListToAdd)
+
+def backupDB():
+
+    # Define the time stamp format
+    longTime = datetime.datetime.now()
+    timeStamp = longTime.strftime('%m_%d')
+
+    # Define the sources
+    SRCPATH = '/home/pi/clantracker/clanTracker.db'
+    BUPATH = '/home/pi/clantracker/backups/clanTracker' + timeStamp + '.db'
+
+    # Make the copy w/ time stamp, save to a backup-only folder
+    shutil.copyfile(SRCPATH, BUPATH)
 
 ############################################################################################
 # ELO table functions
@@ -148,7 +171,7 @@ def clanFromDBELO(clanList):
             
    return clanList    
 
-def getRequestedInfo(char, statToGet):  
+def getRequestedInfo(char, statToGet):
     ############################################################################################
     # Retreives one stat at a time from the database 
     ############################################################################################ 
@@ -157,6 +180,14 @@ def getRequestedInfo(char, statToGet):
     stat = c.fetchone()[STATSELO.get(statToGet)]
     
     return stat
+
+def writeGame(matchDetails):
+    ############################################################################################
+    # Could be used later to store the results of each qualifying game. The Elo stats
+    # could then be calculated off each game. May not be totally needed.....
+    ############################################################################################
+
+    return 0
 
 ############################################################################################
 # Iron Banner Control table functions

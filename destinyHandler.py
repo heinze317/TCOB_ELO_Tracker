@@ -213,6 +213,7 @@ def charCompare(clanList, tableToFetch):
 
 ############################################################################################
 # Elo functions
+# The actual Elo calculation throws an error. For now, Elo will be simple +/-1 
 ############################################################################################
 
 def buildClanELO():
@@ -276,7 +277,7 @@ def buildClanELO():
 def isClanOnlyGame(matchList, memberList):
     ############################################################################################
     # Compares the list of players in a game with the most current clan instance, 
-    # If only clan members are listed, returns true. Used for the ELO tracker only
+    # If only clan members are listed returns true. Used for the ELO tracker only
     ############################################################################################
 
    return (set(matchList).issubset(memberList))
@@ -315,7 +316,8 @@ def updateMemberDataELO(clanList):
     ############################################################################################
     # Finds the last clan only game played for each member of the clan.
     # Returns an updated instance of each Member containing the last match ID
-    ############################################################################################ 
+    ############################################################################################
+    gamesToUpdate = [] 
     
     # Make a list of members
     memberList = []
@@ -335,25 +337,16 @@ def updateMemberDataELO(clanList):
                 clanOnly = isClanOnlyGame(matchPlayers, memberList)
 
                 # If it is clan-only, compare against the previous clan-only game
-                if clanOnly:
+                if clanOnly and len(matchPlayers) > 1:
                     if lastMatch != char['lastGame']:
+                        gamesToUpdate.append(lastMatch)
                         char['lastGame'] = lastMatch
                         details = getMatchDetailsELO(lastMatch)
                         updateCharDataELO(char, details)
-                                                
-    """# Calculate the ELO rating
-    teams = calculateELO(details)
-    
-    # Update the ELO rating in the DB
-    for char in details:
-        if char['team'] == 'Alpha':
-           newELOFactor = teams.get('Alpha')           
-        else:
-           newELOFactor = teams.get('Bravo')
-           
-        oldELO = getRequestedInfo(char['charId'], 'ELO')
-        newELO *= (newELOFactor/oldELO)
-        updateOneStat(char['charId'], 'ELO', newELO)"""
+
+    # If any info was updated, calculate elo ratings on that info
+    if len(gamesToUpdate) > 0:
+        calculateELO(gamesToUpdate)
 
 def updateCharDataELO(char, details):
     ############################################################################################
@@ -378,12 +371,12 @@ def updateCharDataELO(char, details):
                 else:
                     char['KDR'] = (char['kills']/char['deaths'])
 
-                if deets['win'] == 0:
+                '''if deets['win'] == 0:
                     char['wins'] += 1
                     char['ELO'] += 1
                 else:
                     char['losses'] += 1
-                    char['ELO'] -= 1
+                    char['ELO'] -= 1'''
 
                 # Update the DB
                 updateCharDBELO(char)
@@ -452,9 +445,82 @@ def calculateELOOld(matchDetails):
 
     return teamInfo   
 
-def calculateELO(matchDetails):
+def calculateELO(gamesToUpdate):
 
-    return 0
+    # Big ass loop mind-fuck incoming.....
+    for game in gamesToUpdate:
+
+        # Empty containers and variables
+        alphaPlayers = []
+        bravoPlayers = []
+        alphaScore, bravoScore, alphaOld, bravoOld = 0
+        alphaExpected, bravoExpected, alphaActual, bravoActual = 0
+        alphaNew, bravoNew = 0
+        k = 32
+
+        # Get the game details
+        details = getMatchDetailsELO(game)
+
+        # Split up the teams
+        for deets in details:
+
+            # If the team is returned as 0 something is wrong
+            if deets['team'] == 0:
+                # Break the loop
+                pass
+
+            if deets['team'] == 'Alpha':
+                alphaPlayers.append(deets['charId'])
+                alphaScore += deets['score']
+                alphaOld += getRequestedInfo(deets['charId'], 'ELO')
+
+            if deets['team'] == 'Bravo':
+                bravoPlayers.append(deets['charId'])
+                bravoScore += deets['score']
+                bravoOld += getRequestedInfo(deets['charId'], 'ELO')
+
+            # Find the winner
+            if deets['win'] == 0 and deets['team'] == 'Alpha':
+                # Alpha wins
+                alphaActual = 1
+                bravoActual = 0
+
+            if deets['win'] == 0 and deets['team'] == 'Bravo':
+                # Bravo wins
+                alphaActual = 0
+                bravoActual = 1
+
+        # Get the average elo rating for each team
+        alphaAvgElo = (alphaOld / len(alphaPlayers))
+        bravoAvgElo = (bravoOld / len(bravoPlayers))
+
+        # Get the expected scores
+        alphaExpected = calculateExpected(alphaAvgElo, bravoAvgElo)
+        bravoExpected = calculateExpected(bravoAvgElo, alphaAvgElo)
+
+        # Account for any modifiers
+        if alphaScore > (bravoScore * 1.5) or bravoScore > (alphaScore * 1.5):
+            k += 1
+    
+        if len(alphaPlayers) > len(bravoPlayers) or len(bravoPlayers) > len(alphaPlayers):
+            k += 1
+
+        # Calculate the actual outcome
+        alphaNew = (alphaAvgElo + k * (alphaActual - alphaExpected))
+        bravoNew = (bravoAvgElo + k * (bravoActual - bravoExpected))
+
+        # Update the DB with the new elo scores
+        for player in alphaPlayers:
+            updateOneStat(player, 'ELO', alphaNew)
+
+        for player in bravoPlayers:
+            updateOneStat(player, 'ELO', bravoNew)    
+    
+
+def calculateExpected(teamA, teamB):
+
+    # Seperate to avoid the monster loop
+    return 1 / (1 + 10 ** ((B - A) / 400))
 
 ############################################################################################
 # Iron Banner Control functions
