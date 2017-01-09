@@ -7,7 +7,7 @@ from DBHandler import *
 
 
 # Dictionaries
-HEADERS = {"X-API-Key":'1fdb95e58c5e4b91b4d628a1a405d9e5'}
+HEADERS = {"X-API-Key":'***********'}
 
 CLASSES = {
     2271682572: 'Warlock',
