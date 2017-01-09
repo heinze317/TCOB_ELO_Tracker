@@ -9,7 +9,7 @@ from email.mime.multipart import MIMEMultipart
 MAILTO = 'destinyclantracker@gmail.com'
 MAILFROM = 'destinyclantracker@gmail.com'
 MAILMULTI = ['destinyclantracker@gmail.com','adamseamil@adamseamil.com']
-PASSWORD = 'roxie301'
+PASSWORD = '*******'
 COMMASPACE = ','
 #SERVER = smtplib.SMTP('smtp.gmail.com', 587)
 
