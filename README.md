@@ -2,7 +2,7 @@
 
 Just a simple bundle of files that track and post the ELO and other stats for the TCOB Destiny clan. Data can be found on /r/tcob.
 
-In its current state, the entire module is started manually via Unix command line. The trackerHandler listens for the active tracker's PID every hour. If it is not found, an email notification of a crash is sent. At this point the owner must manually restart the tracker.
+1/5/17- Started running the first Beta test for the first TCOB tourney. 
 
 # ELOTracker
 
@@ -20,7 +20,7 @@ Started as a fun way to track the clan members' Iron Banner games and their perf
 
 # Features and Functions to add
 
-Date filter for special events to only keep data for current event
+Date filter for special events to only keep data for current event -In progress
 
 Function to check for new members/characters and add them to the DB (added 11/29)(needs testing)
 
